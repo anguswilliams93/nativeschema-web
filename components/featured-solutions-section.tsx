@@ -7,11 +7,20 @@ import { AnimatedSection } from '@/components/animated-section'
 
 const solutions = [
   {
+    title: 'Zerobi Pty Ltd',
+    year: '2025',
+    category: 'Website Design',
+    description: 'Modern, high-performance marketing website for a data analytics and AI consulting firm. Clean design with smooth animations and optimised for conversions.',
+    features: ['Custom Design', 'Motion Animations', 'SEO Optimised', 'Fast Hosting'],
+    link: 'https://zerobi.au/',
+  },
+  {
     title: 'Microsoft Power BI 2025',
     year: '2025',
     category: 'Business Intelligence',
     description: 'Advanced analytics and interactive visualizations powered by Microsoft Power BI. Transform your data into compelling stories that drive business decisions.',
     features: ['Real-time Dashboards', 'Custom Reports', 'Data Modeling', 'AI Insights'],
+    link: null,
   },
   {
     title: 'Krubase CRM 2025',
@@ -19,6 +28,7 @@ const solutions = [
     category: 'Customer Relationship Management',
     description: 'Modern CRM solution designed for service businesses. Streamline client interactions, track opportunities, and build lasting relationships.',
     features: ['Contact Management', 'Pipeline Tracking', 'Automation', 'Integrations'],
+    link: 'https://krubase.com/',
   },
   {
     title: 'TGA Dashboard 2025',
@@ -26,6 +36,7 @@ const solutions = [
     category: 'Regulatory Compliance',
     description: 'Comprehensive dashboard for TGA compliance monitoring and reporting. Stay ahead of regulatory requirements with real-time tracking.',
     features: ['Compliance Tracking', 'Automated Alerts', 'Audit Reports', 'Document Management'],
+    link: 'https://tga-dashboard.vercel.app/',
   },
 ]
 
@@ -57,9 +68,17 @@ function SolutionCard({ solution }: { solution: typeof solutions[0] }) {
             </span>
           ))}
         </div>
-        <Button variant="outline" className="w-full mt-4">
-          Learn More
-        </Button>
+        {solution.link ? (
+          <Button variant="outline" className="w-full mt-4" asChild>
+            <a href={solution.link} target="_blank" rel="noopener noreferrer">
+              See It Live →
+            </a>
+          </Button>
+        ) : (
+          <Button variant="outline" className="w-full mt-4" disabled>
+            Coming Soon
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

@@ -102,18 +102,6 @@ export function HeroSection() {
             seamless integrations, and data-driven solutions.
           </p>
         </AnimatedSection>
-
-        {/* CTAs */}
-        <AnimatedSection direction="up" delay={0.8}>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-base px-8">
-              Get Started
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8">
-              Our Services
-            </Button>
-          </div>
-        </AnimatedSection>
       </div>
     </section>
   )
