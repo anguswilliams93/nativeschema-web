@@ -16,7 +16,6 @@
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.562.0",
     "motion": "^12.24.12",
-    //"motion-plus": "https://api.motion.dev/registry.tgz?package=motion-plus&version=2.0.2&token=e54a3ff70c4d5ad835f5ae7b4803de88a76cbf171e5850a5d555989e49a87310",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
