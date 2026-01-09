@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-const navLinks = [
+type NavLink = { label: string; href: string }
+
+const navLinks: NavLink[] = [
   { label: 'Services', href: '#services' },
   { label: 'Solutions', href: '#solutions' },
   { label: 'Process', href: '#process' },
@@ -117,7 +119,7 @@ function MobileMenu({
   activeSection,
   onNavigate
 }: {
-  navLinks: typeof navLinks
+  navLinks: NavLink[]
   activeSection: string
   onNavigate: (href: string) => void
 }) {
