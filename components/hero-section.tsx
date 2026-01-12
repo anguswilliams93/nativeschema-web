@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { Typewriter } from 'motion-plus/react'
 import { Button } from '@/components/ui/button'
 import { AnimatedSection } from '@/components/animated-section'
+import Image from 'next/image'
 
 export function HeroSection() {
   const tagline = 'BUILDING SMARTER'
@@ -67,6 +68,20 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto text-center">
+        {/* Logo */}
+        <AnimatedSection direction="up" delay={0.1}>
+          <div className="mb-12 flex justify-center">
+            <Image
+              src="/logo-horizontal.svg"
+              alt="Native Schema"
+              width={1600}
+              height={400}
+              className="h-40 md:h-60 lg:h-72 xl:h-80 w-auto text-foreground max-w-full px-4"
+              priority
+            />
+          </div>
+        </AnimatedSection>
+
         {/* Animated tagline with typewriter effect */}
         <div className="mb-4">
           <Typewriter

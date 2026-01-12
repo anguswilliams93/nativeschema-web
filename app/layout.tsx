@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   description: "Technology company specializing in custom software, system integrations, and data-driven automation for service businesses. We build smart systems that empower businesses to work smarter and scale faster.",
   keywords: ["custom software", "system integration", "automation", "data analytics", "business intelligence", "legal tech", "Brisbane", "Australia"],
   authors: [{ name: "Native Schema" }],
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "Native Schema | Building Smarter Systems",
     description: "Technology company specializing in custom software, system integrations, and data-driven automation for service businesses.",

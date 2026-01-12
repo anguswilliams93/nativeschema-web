@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 type NavLink = { label: string; href: string }
 
@@ -64,13 +65,28 @@ export function StickyNav() {
           className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50"
         >
           <div className="max-w-6xl mx-auto px-4">
-            <nav className="flex items-center justify-between h-16">
+            <nav className="flex items-center justify-between h-24 md:h-28">
               {/* Logo / Brand */}
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="font-bold text-lg hover:text-primary transition-colors"
+                className="hover:opacity-80 transition-opacity flex items-center"
               >
-                NativeSchema
+                {/* Mobile: Favicon */}
+                <Image
+                  src="/favicon.svg"
+                  alt="Native Schema"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 md:hidden text-foreground"
+                />
+                {/* Desktop: Full Logo */}
+                <Image
+                  src="/logo-horizontal.svg"
+                  alt="Native Schema"
+                  width={800}
+                  height={200}
+                  className="hidden md:block h-20 lg:h-24 w-auto text-foreground"
+                />
               </button>
 
               {/* Navigation Links */}
@@ -168,7 +184,7 @@ function MobileMenu({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border/50 p-4"
+            className="absolute top-24 md:top-28 left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border/50 p-4"
           >
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
