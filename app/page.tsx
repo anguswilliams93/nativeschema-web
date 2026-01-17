@@ -2,6 +2,7 @@
 
 import { HeroSection } from '@/components/hero-section'
 import { ServicesSection } from '@/components/services-section'
+import { IntegrationsSection } from '@/components/integrations-section'
 import { FeaturedSolutionsSection } from '@/components/featured-solutions-section'
 import { ProcessSection } from '@/components/process-section'
 import { SocialProofSection } from '@/components/social-proof-section'
@@ -15,6 +16,7 @@ export default function Home() {
       <StickyNav />
       <HeroSection />
       <ServicesSection />
+      <IntegrationsSection />
       <FeaturedSolutionsSection />
       <ProcessSection />
       <SocialProofSection />

@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Ticker } from 'motion-plus/react'
+import { Carousel, useCarousel } from 'motion-plus/react'
+import { animate, useMotionValue, motion } from 'motion/react'
 import { AnimatedSection } from '@/components/animated-section'
 
 const articles = [
@@ -43,11 +45,50 @@ const articles = [
   },
 ]
 
+function AutoplayController({ duration = 6000 }: { duration?: number }) {
+  const { currentPage, nextPage } = useCarousel()
+  const progress = useMotionValue(0)
+
+  useEffect(() => {
+    const animation = animate(progress, [0, 1], {
+      duration: duration / 1000,
+      ease: 'linear',
+      onComplete: nextPage,
+    })
+
+    return () => animation.stop()
+  }, [duration, nextPage, progress, currentPage])
+
+  return null
+}
+
+function Pagination() {
+  const { currentPage, totalPages, gotoPage } = useCarousel()
+
+  return (
+    <div className="flex justify-center gap-2 mt-8">
+      {Array.from({ length: totalPages }, (_, index) => (
+        <motion.button
+          key={index}
+          initial={false}
+          animate={{
+            scale: currentPage === index ? 1.2 : 1,
+            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
+          }}
+          className="w-2 h-2 rounded-full transition-colors"
+          onClick={() => gotoPage(index)}
+          aria-label={`Go to article ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
 function ArticleCard({ article }: { article: typeof articles[0] }) {
   return (
-    <Card className="h-full w-[320px] md:w-[360px] border hover:border-primary/30 transition-colors flex-shrink-0 group">
-      <CardHeader>
-        <div className="flex items-center justify-between mb-2">
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-3xl h-auto flex flex-col select-none mx-auto group">
+      <CardHeader className="text-center pb-4 pt-8">
+        <div className="flex items-center justify-center gap-4 mb-2">
           <span className="text-xs tracking-widest text-primary font-medium">
             {article.category.toUpperCase()}
           </span>
@@ -55,19 +96,19 @@ function ArticleCard({ article }: { article: typeof articles[0] }) {
             {article.readTime}
           </span>
         </div>
-        <CardTitle className="text-xl group-hover:text-primary transition-colors">
+        <CardTitle className="text-xl md:text-2xl lg:text-3xl group-hover:text-primary transition-colors">
           {article.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <CardDescription className="text-sm">
+      <CardContent className="px-8 md:px-12 pb-8 space-y-4">
+        <CardDescription className="text-base md:text-lg text-center leading-relaxed">
           {article.description}
         </CardDescription>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-4 pt-2">
+          <span className="text-sm text-muted-foreground">
             {article.date}
           </span>
-          <Button variant="ghost" size="sm" className="text-primary">
+          <Button variant="ghost" className="text-primary hover:text-primary/80">
             Read More →
           </Button>
         </div>
@@ -77,7 +118,7 @@ function ArticleCard({ article }: { article: typeof articles[0] }) {
 }
 
 export function ArticlesSection() {
-  const tickerItems = articles.map((article, index) => (
+  const articleItems = articles.map((article, index) => (
     <ArticleCard key={index} article={article} />
   ))
 
@@ -85,7 +126,7 @@ export function ArticlesSection() {
     <section id="journal" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
-          <div className="text-center mb-16 px-4">
+          <div className="text-center mb-12 px-4">
             <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
               JOURNAL
             </p>
@@ -99,14 +140,16 @@ export function ArticlesSection() {
         </AnimatedSection>
 
         <AnimatedSection direction="up" delay={0.2}>
-          <Ticker
-            items={tickerItems}
-            velocity={-25}
-            gap={24}
-            hoverFactor={0.5}
-            fade={100}
-            className="py-4"
-          />
+          <div className="relative max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+            <Carousel
+              items={articleItems}
+              gap={0}
+              className="py-4"
+            >
+              <AutoplayController duration={7000} />
+              <Pagination />
+            </Carousel>
+          </div>
         </AnimatedSection>
       </div>
     </section>

@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { LogoHorizontal, LogoIcon } from '@/components/logo'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 
 type NavLink = { label: string; href: string }
 
@@ -65,28 +66,16 @@ export function StickyNav() {
           className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50"
         >
           <div className="max-w-6xl mx-auto px-4">
-            <nav className="flex items-center justify-between h-24 md:h-28">
+            <nav className="flex items-center justify-between h-16 md:h-18">
               {/* Logo / Brand */}
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="hover:opacity-80 transition-opacity flex items-center"
               >
-                {/* Mobile: Favicon */}
-                <Image
-                  src="/favicon.svg"
-                  alt="Native Schema"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 md:hidden text-foreground"
-                />
+                {/* Mobile: Icon */}
+                <LogoIcon className="h-6 w-6 md:hidden" />
                 {/* Desktop: Full Logo */}
-                <Image
-                  src="/logo-horizontal.svg"
-                  alt="Native Schema"
-                  width={800}
-                  height={200}
-                  className="hidden md:block h-20 lg:h-24 w-auto text-foreground"
-                />
+                <LogoHorizontal className="hidden md:block h-6 w-auto" />
               </button>
 
               {/* Navigation Links */}
@@ -107,21 +96,26 @@ export function StickyNav() {
                 ))}
               </div>
 
-              {/* CTA Button */}
-              <Button
-                size="sm"
-                onClick={() => scrollToSection('#contact')}
-                className="hidden sm:inline-flex"
-              >
-                Get in Touch
-              </Button>
+              {/* CTA Button + Theme Toggle */}
+              <div className="hidden sm:flex items-center gap-2">
+                <ThemeToggle />
+                <Button
+                  size="sm"
+                  onClick={() => scrollToSection('#contact')}
+                >
+                  Get in Touch
+                </Button>
+              </div>
 
-              {/* Mobile Menu Button */}
-              <MobileMenu
-                navLinks={navLinks}
-                activeSection={activeSection}
-                onNavigate={scrollToSection}
-              />
+              {/* Mobile: Theme Toggle + Menu */}
+              <div className="flex sm:hidden items-center gap-1">
+                <ThemeToggle />
+                <MobileMenu
+                  navLinks={navLinks}
+                  activeSection={activeSection}
+                  onNavigate={scrollToSection}
+                />
+              </div>
             </nav>
           </div>
         </motion.header>

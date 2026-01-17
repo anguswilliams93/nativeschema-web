@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Typewriter } from 'motion-plus/react'
+import { Typewriter, Carousel, useCarousel } from 'motion-plus/react'
+import { animate, useMotionValue, motion } from 'motion/react'
 import { AnimatedSection } from '@/components/animated-section'
-import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
 
 const services = [
   {
@@ -99,7 +99,7 @@ function ServiceDialog({ service, open, onOpenChange }: {
         </DialogHeader>
         <div className="mt-4 text-foreground leading-relaxed min-h-[120px]">
           {open && (
-            <Typewriter speed={0.02}>
+            <Typewriter speed={0.01}>
               {service.simpleExplanation}
             </Typewriter>
           )}
@@ -114,14 +114,96 @@ function ServiceDialog({ service, open, onOpenChange }: {
   )
 }
 
+function AutoplayController({ duration = 6000 }: { duration?: number }) {
+  const { currentPage, nextPage } = useCarousel()
+  const progress = useMotionValue(0)
+
+  useEffect(() => {
+    const animation = animate(progress, [0, 1], {
+      duration: duration / 1000,
+      ease: 'linear',
+      onComplete: nextPage,
+    })
+
+    return () => animation.stop()
+  }, [duration, nextPage, progress, currentPage])
+
+  return null
+}
+
+function Pagination() {
+  const { currentPage, totalPages, gotoPage } = useCarousel()
+
+  return (
+    <div className="flex justify-center gap-2 mt-8">
+      {Array.from({ length: totalPages }, (_, index) => (
+        <motion.button
+          key={index}
+          initial={false}
+          animate={{
+            scale: currentPage === index ? 1.2 : 1,
+            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
+          }}
+          className="w-2 h-2 rounded-full transition-colors"
+          onClick={() => gotoPage(index)}
+          aria-label={`Go to service ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ServiceCard({ service, onLearnMore }: { service: typeof services[0], onLearnMore: () => void }) {
+  return (
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-3xl h-auto flex flex-col select-none mx-auto">
+      <CardHeader className="text-center pb-4 pt-8">
+        <CardTitle className="text-xl md:text-2xl lg:text-3xl">{service.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="px-8 md:px-12 pb-8">
+        <CardDescription className="text-base md:text-lg text-center mb-6 leading-relaxed">
+          {service.description}
+        </CardDescription>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm md:text-base text-muted-foreground mb-6">
+          {service.highlights.map((highlight, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              {highlight}
+            </li>
+          ))}
+        </ul>
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            className="text-primary hover:text-primary/80"
+            onClick={(e) => {
+              e.stopPropagation()
+              onLearnMore()
+            }}
+          >
+            What does this mean? →
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function ServicesSection() {
   const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null)
 
+  const serviceItems = services.map((service, index) => (
+    <ServiceCard
+      key={index}
+      service={service}
+      onLearnMore={() => setSelectedService(service)}
+    />
+  ))
+
   return (
-    <section id="services" className="min-h-screen flex items-center py-24 px-4 bg-muted/30">
-      <div className="max-w-6xl mx-auto w-full">
+    <section id="services" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
+      <div className="w-full">
         <AnimatedSection direction="up">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 px-4">
             <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
               WHAT WE DO
             </p>
@@ -135,39 +217,18 @@ export function ServicesSection() {
           </div>
         </AnimatedSection>
 
-        <StaggerContainer
-          staggerDelay={0.1}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {services.map((service, index) => (
-            <StaggerItem key={index}>
-              <Card
-                className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 cursor-pointer"
-                onClick={() => setSelectedService(service)}
-              >
-                <CardHeader>
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base mb-4">
-                    {service.description}
-                  </CardDescription>
-                  <ul className="space-y-1.5 text-sm text-muted-foreground">
-                    {service.highlights.map((highlight, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto">
-                    What does this mean? →
-                  </Button>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        <AnimatedSection direction="up" delay={0.2}>
+          <div className="relative max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+            <Carousel
+              items={serviceItems}
+              gap={0}
+              className="py-4"
+            >
+              <AutoplayController duration={8000} />
+              <Pagination />
+            </Carousel>
+          </div>
+        </AnimatedSection>
 
         {selectedService && (
           <ServiceDialog

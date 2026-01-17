@@ -1,14 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion } from 'motion/react'
-import { Typewriter } from 'motion-plus/react'
-import { Button } from '@/components/ui/button'
 import { AnimatedSection } from '@/components/animated-section'
-import Image from 'next/image'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { LogoHorizontal } from '@/components/logo'
 
 export function HeroSection() {
-  const tagline = 'BUILDING SMARTER'
   const [videoLoaded, setVideoLoaded] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -50,6 +47,11 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+      {/* Theme toggle - top right corner */}
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Video background */}
       <div className="absolute inset-0">
         <video
@@ -67,54 +69,26 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-background/60 dark:bg-background/70" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto text-center">
+      <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Logo */}
         <AnimatedSection direction="up" delay={0.1}>
-          <div className="mb-12 flex justify-center">
-            <Image
-              src="/logo-horizontal.svg"
-              alt="Native Schema"
-              width={1600}
-              height={400}
-              className="h-40 md:h-60 lg:h-72 xl:h-80 w-auto text-foreground max-w-full px-4"
-              priority
-            />
+          <div className="mb-16 flex justify-center">
+            <LogoHorizontal className="h-12 md:h-14 lg:h-16 w-auto max-w-full px-4" />
           </div>
         </AnimatedSection>
 
-        {/* Animated tagline with typewriter effect */}
-        <div className="mb-4">
-          <Typewriter
-            as="h1"
-            className="text-sm md:text-base tracking-[0.4em] text-muted-foreground font-medium"
-            speed="slow"
-            cursorClassName="text-primary"
-          >
-            {tagline}
-          </Typewriter>
-        </div>
-
         {/* Main headline */}
-        <AnimatedSection direction="up" delay={0.4}>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-            SYSTEMS FOR{' '}
-            <span className="text-primary">REAL CHANGE</span>.
-          </h2>
+        <AnimatedSection direction="up" delay={0.3}>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-8 text-foreground">
+            Smart systems for service businesses
+          </h1>
         </AnimatedSection>
 
         {/* Subheading */}
-        <AnimatedSection direction="up" delay={0.6}>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            A technology company focusing on data, automation and efficiency.
-            We build smart systems that empower service businesses to work smarter and scale faster.
-          </p>
-        </AnimatedSection>
-
-        {/* Extended description */}
-        <AnimatedSection direction="up" delay={0.7}>
-          <p className="text-base text-muted-foreground/80 max-w-3xl mx-auto mb-12">
-            Fueled by innovation and guided by precision, we deliver custom software,
-            seamless integrations, and data-driven solutions.
+        <AnimatedSection direction="up" delay={0.5}>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            We build custom software, integrations, and analytics solutions
+            that help you work smarter and scale faster.
           </p>
         </AnimatedSection>
       </div>
