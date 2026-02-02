@@ -1,11 +1,19 @@
 'use client'
 
+<<<<<<< HEAD
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Ticker } from 'motion-plus/react'
+=======
+import { useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Carousel, useCarousel } from 'motion-plus/react'
+import { animate, useMotionValue, motion } from 'motion/react'
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 import { AnimatedSection } from '@/components/animated-section'
 import { EditableText } from '@/components/editable-text'
 import { useAdmin } from '@/components/admin-provider'
@@ -54,6 +62,7 @@ const defaultSolutions: Solution[] = [
   },
 ]
 
+<<<<<<< HEAD
 function EditableSolutionCard({
   solution,
   isAdmin,
@@ -138,6 +147,52 @@ function EditableSolutionCard({
     >
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between mb-2">
+=======
+function AutoplayController({ duration = 6000 }: { duration?: number }) {
+  const { currentPage, nextPage } = useCarousel()
+  const progress = useMotionValue(0)
+
+  useEffect(() => {
+    const animation = animate(progress, [0, 1], {
+      duration: duration / 1000,
+      ease: 'linear',
+      onComplete: nextPage,
+    })
+
+    return () => animation.stop()
+  }, [duration, nextPage, progress, currentPage])
+
+  return null
+}
+
+function Pagination() {
+  const { currentPage, totalPages, gotoPage } = useCarousel()
+
+  return (
+    <div className="flex justify-center gap-2 mt-8">
+      {Array.from({ length: totalPages }, (_, index) => (
+        <motion.button
+          key={index}
+          initial={false}
+          animate={{
+            scale: currentPage === index ? 1.2 : 1,
+            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
+          }}
+          className="w-2 h-2 rounded-full transition-colors"
+          onClick={() => gotoPage(index)}
+          aria-label={`Go to solution ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function SolutionCard({ solution }: { solution: typeof solutions[0] }) {
+  return (
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-3xl h-auto flex flex-col select-none mx-auto">
+      <CardHeader className="text-center pb-4 pt-8">
+        <div className="flex items-center justify-center gap-4 mb-2">
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
           <span className="text-xs tracking-widest text-primary font-medium">
             {solution.category.toUpperCase()}
           </span>
@@ -145,33 +200,35 @@ function EditableSolutionCard({
             {solution.year}
           </span>
         </div>
-        <CardTitle className="text-2xl">{solution.title}</CardTitle>
+        <CardTitle className="text-xl md:text-2xl lg:text-3xl">{solution.title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <CardDescription className="text-base">
+      <CardContent className="px-8 md:px-12 pb-8 space-y-6">
+        <CardDescription className="text-base md:text-lg text-center leading-relaxed">
           {solution.description}
         </CardDescription>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {solution.features.map((feature, featureIndex) => (
             <span
               key={featureIndex}
-              className="text-xs px-3 py-1 bg-muted rounded-full text-muted-foreground"
+              className="text-xs md:text-sm px-3 py-1 bg-muted rounded-full text-muted-foreground"
             >
               {feature}
             </span>
           ))}
         </div>
-        {solution.link ? (
-          <Button variant="outline" className="w-full mt-4" asChild>
-            <a href={solution.link} target="_blank" rel="noopener noreferrer">
-              See It Live →
-            </a>
-          </Button>
-        ) : (
-          <Button variant="outline" className="w-full mt-4" disabled>
-            Coming Soon
-          </Button>
-        )}
+        <div className="text-center pt-2">
+          {solution.link ? (
+            <Button variant="outline" asChild>
+              <a href={solution.link} target="_blank" rel="noopener noreferrer">
+                See It Live →
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" disabled>
+              Coming Soon
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   )
@@ -261,6 +318,7 @@ function AddSolutionCard({ onAdd }: { onAdd: (solution: Solution) => void }) {
 }
 
 export function FeaturedSolutionsSection() {
+<<<<<<< HEAD
   const { isAdmin } = useAdmin()
   const [solutions, setSolutions] = useState<Solution[]>(defaultSolutions)
 
@@ -307,11 +365,17 @@ export function FeaturedSolutionsSection() {
       />
     )),
   ]
+=======
+  const solutionItems = solutions.map((solution, index) => (
+    <SolutionCard key={index} solution={solution} />
+  ))
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
   return (
     <section id="solutions" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
+<<<<<<< HEAD
           <div className="text-center mb-16 px-4">
             <EditableText
               storageKey="solutions-label"
@@ -331,18 +395,33 @@ export function FeaturedSolutionsSection() {
               as="p"
               className="text-muted-foreground max-w-2xl mx-auto"
             />
+=======
+          <div className="text-center mb-12 px-4">
+            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
+              FEATURED WORK
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Solutions That Drive Real Change
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Explore our latest projects and see how we help businesses transform
+              their operations with smart technology.
+            </p>
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
           </div>
         </AnimatedSection>
 
         <AnimatedSection direction="up" delay={0.2}>
-          <Ticker
-            items={tickerItems}
-            velocity={30}
-            gap={24}
-            hoverFactor={0.5}
-            fade={100}
-            className="py-4"
-          />
+          <div className="relative max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+            <Carousel
+              items={solutionItems}
+              gap={0}
+              className="py-4"
+            >
+              <AutoplayController duration={6000} />
+              <Pagination />
+            </Carousel>
+          </div>
         </AnimatedSection>
       </div>
     </section>

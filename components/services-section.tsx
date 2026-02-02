@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+<<<<<<< HEAD
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Typewriter } from 'motion-plus/react'
@@ -11,6 +12,11 @@ import { AnimatedSection } from '@/components/animated-section'
 import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
 import { EditableText } from '@/components/editable-text'
 import { useAdmin } from '@/components/admin-provider'
+=======
+import { Typewriter, Carousel, useCarousel } from 'motion-plus/react'
+import { animate, useMotionValue, motion } from 'motion/react'
+import { AnimatedSection } from '@/components/animated-section'
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
 interface Service {
   title: string
@@ -110,7 +116,7 @@ function ServiceDialog({ service, open, onOpenChange }: {
         </DialogHeader>
         <div className="mt-4 text-foreground leading-relaxed min-h-[120px]">
           {open && (
-            <Typewriter speed={0.02}>
+            <Typewriter speed={0.01}>
               {service.simpleExplanation}
             </Typewriter>
           )}
@@ -125,6 +131,7 @@ function ServiceDialog({ service, open, onOpenChange }: {
   )
 }
 
+<<<<<<< HEAD
 function EditServiceDialog({
   service,
   open,
@@ -195,6 +202,79 @@ function EditServiceDialog({
         </div>
       </DialogContent>
     </Dialog>
+=======
+function AutoplayController({ duration = 6000 }: { duration?: number }) {
+  const { currentPage, nextPage } = useCarousel()
+  const progress = useMotionValue(0)
+
+  useEffect(() => {
+    const animation = animate(progress, [0, 1], {
+      duration: duration / 1000,
+      ease: 'linear',
+      onComplete: nextPage,
+    })
+
+    return () => animation.stop()
+  }, [duration, nextPage, progress, currentPage])
+
+  return null
+}
+
+function Pagination() {
+  const { currentPage, totalPages, gotoPage } = useCarousel()
+
+  return (
+    <div className="flex justify-center gap-2 mt-8">
+      {Array.from({ length: totalPages }, (_, index) => (
+        <motion.button
+          key={index}
+          initial={false}
+          animate={{
+            scale: currentPage === index ? 1.2 : 1,
+            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
+          }}
+          className="w-2 h-2 rounded-full transition-colors"
+          onClick={() => gotoPage(index)}
+          aria-label={`Go to service ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ServiceCard({ service, onLearnMore }: { service: typeof services[0], onLearnMore: () => void }) {
+  return (
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-3xl h-auto flex flex-col select-none mx-auto">
+      <CardHeader className="text-center pb-4 pt-8">
+        <CardTitle className="text-xl md:text-2xl lg:text-3xl">{service.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="px-8 md:px-12 pb-8">
+        <CardDescription className="text-base md:text-lg text-center mb-6 leading-relaxed">
+          {service.description}
+        </CardDescription>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm md:text-base text-muted-foreground mb-6">
+          {service.highlights.map((highlight, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="text-primary mt-0.5">•</span>
+              {highlight}
+            </li>
+          ))}
+        </ul>
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            className="text-primary hover:text-primary/80"
+            onClick={(e) => {
+              e.stopPropagation()
+              onLearnMore()
+            }}
+          >
+            What does this mean? →
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
   )
 }
 
@@ -226,10 +306,19 @@ export function ServicesSection() {
     saveServices(newServices)
   }
 
+  const serviceItems = services.map((service, index) => (
+    <ServiceCard
+      key={index}
+      service={service}
+      onLearnMore={() => setSelectedService(service)}
+    />
+  ))
+
   return (
-    <section id="services" className="min-h-screen flex items-center py-24 px-4 bg-muted/30">
-      <div className="max-w-6xl mx-auto w-full">
+    <section id="services" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
+      <div className="w-full">
         <AnimatedSection direction="up">
+<<<<<<< HEAD
           <div className="text-center mb-16">
             <EditableText
               storageKey="services-label"
@@ -290,6 +379,34 @@ export function ServicesSection() {
             </StaggerItem>
           ))}
         </StaggerContainer>
+=======
+          <div className="text-center mb-12 px-4">
+            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
+              WHAT WE DO
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Smart Solutions, Built for Business
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We specialize in building intuitive systems that simplify complex technology
+              and empower service businesses to scale.
+            </p>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection direction="up" delay={0.2}>
+          <div className="relative max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+            <Carousel
+              items={serviceItems}
+              gap={0}
+              className="py-4"
+            >
+              <AutoplayController duration={8000} />
+              <Pagination />
+            </Carousel>
+          </div>
+        </AnimatedSection>
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
         {selectedService && !isAdmin && (
           <ServiceDialog

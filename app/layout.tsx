@@ -41,9 +41,8 @@ export default function RootLayout({
             __html: `
               (function() {
                 const stored = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = stored || (prefersDark ? 'dark' : 'light');
-                if (theme === 'dark' || (theme === 'system' && prefersDark)) {
+                const theme = stored || 'dark';
+                if (theme === 'dark') {
                   document.documentElement.classList.add('dark');
                 }
               })();
@@ -52,11 +51,16 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+<<<<<<< HEAD
         <ThemeProvider defaultTheme="system" storageKey="theme">
           <AdminProvider>
             {children}
             <AdminLogin />
           </AdminProvider>
+=======
+        <ThemeProvider defaultTheme="dark" storageKey="theme">
+          {children}
+>>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
         </ThemeProvider>
       </body>
     </html>

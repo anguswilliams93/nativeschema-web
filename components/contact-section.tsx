@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { AnimatedSection } from '@/components/animated-section'
-import Image from 'next/image'
+import { LogoHorizontal } from '@/components/logo'
 
 const socialLinks = [
   { name: 'Instagram', href: 'https://instagram.com/nativeschema' },
@@ -156,13 +156,7 @@ export function ContactSection() {
           <div className="pt-16 border-t border-border/50">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
               <div className="flex items-center">
-                <Image
-                  src="/logo-text.svg"
-                  alt="Native Schema"
-                  width={480}
-                  height={100}
-                  className="h-16 md:h-20 lg:h-24 w-auto text-foreground"
-                />
+                <LogoHorizontal className="h-8 md:h-10 w-auto" />
               </div>
 
               <nav className="flex flex-wrap justify-center gap-8">
