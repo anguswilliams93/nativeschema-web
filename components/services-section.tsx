@@ -1,22 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-<<<<<<< HEAD
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Typewriter } from 'motion-plus/react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
+import Autoplay from 'embla-carousel-autoplay'
 import { AnimatedSection } from '@/components/animated-section'
-import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
 import { EditableText } from '@/components/editable-text'
 import { useAdmin } from '@/components/admin-provider'
-=======
-import { Typewriter, Carousel, useCarousel } from 'motion-plus/react'
-import { animate, useMotionValue, motion } from 'motion/react'
-import { AnimatedSection } from '@/components/animated-section'
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
 interface Service {
   title: string
@@ -100,6 +99,25 @@ const defaultServices: Service[] = [
   }
 ]
 
+function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
+  return (
+    <div className="flex justify-center gap-2 mt-8">
+      {Array.from({ length: count }, (_, index) => (
+        <button
+          key={index}
+          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            current === index
+              ? 'bg-primary scale-125'
+              : 'bg-muted hover:bg-muted-foreground/50'
+          }`}
+          onClick={() => onSelect(index)}
+          aria-label={`Go to slide ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
 function ServiceDialog({ service, open, onOpenChange }: {
   service: Service
   open: boolean
@@ -116,9 +134,7 @@ function ServiceDialog({ service, open, onOpenChange }: {
         </DialogHeader>
         <div className="mt-4 text-foreground leading-relaxed min-h-[120px]">
           {open && (
-            <Typewriter speed={0.01}>
-              {service.simpleExplanation}
-            </Typewriter>
+            <p>{service.simpleExplanation}</p>
           )}
         </div>
         <div className="mt-6 flex justify-end">
@@ -131,7 +147,6 @@ function ServiceDialog({ service, open, onOpenChange }: {
   )
 }
 
-<<<<<<< HEAD
 function EditServiceDialog({
   service,
   open,
@@ -202,79 +217,51 @@ function EditServiceDialog({
         </div>
       </DialogContent>
     </Dialog>
-=======
-function AutoplayController({ duration = 6000 }: { duration?: number }) {
-  const { currentPage, nextPage } = useCarousel()
-  const progress = useMotionValue(0)
-
-  useEffect(() => {
-    const animation = animate(progress, [0, 1], {
-      duration: duration / 1000,
-      ease: 'linear',
-      onComplete: nextPage,
-    })
-
-    return () => animation.stop()
-  }, [duration, nextPage, progress, currentPage])
-
-  return null
-}
-
-function Pagination() {
-  const { currentPage, totalPages, gotoPage } = useCarousel()
-
-  return (
-    <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: totalPages }, (_, index) => (
-        <motion.button
-          key={index}
-          initial={false}
-          animate={{
-            scale: currentPage === index ? 1.2 : 1,
-            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
-          }}
-          className="w-2 h-2 rounded-full transition-colors"
-          onClick={() => gotoPage(index)}
-          aria-label={`Go to service ${index + 1}`}
-        />
-      ))}
-    </div>
   )
 }
 
-function ServiceCard({ service, onLearnMore }: { service: typeof services[0], onLearnMore: () => void }) {
+function ServiceCard({
+  service,
+  isAdmin,
+  onClick
+}: {
+  service: Service
+  isAdmin: boolean
+  onClick: () => void
+}) {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-3xl h-auto flex flex-col select-none mx-auto">
-      <CardHeader className="text-center pb-4 pt-8">
-        <CardTitle className="text-xl md:text-2xl lg:text-3xl">{service.title}</CardTitle>
+    <Card
+      className={`w-[90vw] max-w-lg transition-all duration-300 hover:shadow-lg hover:border-primary/20 cursor-pointer select-none mx-auto ${isAdmin ? 'ring-2 ring-primary/20' : ''}`}
+      onClick={onClick}
+    >
+      {isAdmin && (
+        <div className="absolute top-2 right-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded z-10">
+          Click to edit
+        </div>
+      )}
+      <CardHeader>
+        <CardTitle className="text-xl">{service.title}</CardTitle>
       </CardHeader>
-      <CardContent className="px-8 md:px-12 pb-8">
-        <CardDescription className="text-base md:text-lg text-center mb-6 leading-relaxed">
+      <CardContent>
+        <CardDescription className="text-base mb-4">
           {service.description}
         </CardDescription>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm md:text-base text-muted-foreground mb-6">
-          {service.highlights.map((highlight, i) => (
+        <ul className="space-y-1.5 text-sm text-muted-foreground">
+          {service.highlights.slice(0, 3).map((highlight, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
+              <span className="text-primary mt-1">•</span>
               {highlight}
             </li>
           ))}
+          {service.highlights.length > 3 && (
+            <li className="text-primary text-xs">+{service.highlights.length - 3} more</li>
+          )}
         </ul>
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            className="text-primary hover:text-primary/80"
-            onClick={(e) => {
-              e.stopPropagation()
-              onLearnMore()
-            }}
-          >
-            What does this mean? →
-          </Button>
-        </div>
+        <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto">
+          {isAdmin ? 'Edit service →' : 'What does this mean? →'}
+        </Button>
       </CardContent>
     </Card>
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
   )
 }
 
@@ -306,20 +293,37 @@ export function ServicesSection() {
     saveServices(newServices)
   }
 
-  const serviceItems = services.map((service, index) => (
-    <ServiceCard
-      key={index}
-      service={service}
-      onLearnMore={() => setSelectedService(service)}
-    />
-  ))
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+  const onSelect = useCallback(() => {
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+  }, [api])
+
+  useEffect(() => {
+    if (!api) return
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap())
+    api.on('select', onSelect)
+    return () => {
+      api.off('select', onSelect)
+    }
+  }, [api, onSelect])
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      api?.scrollTo(index)
+    },
+    [api]
+  )
 
   return (
     <section id="services" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
-<<<<<<< HEAD
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 px-4">
             <EditableText
               storageKey="services-label"
               defaultValue="WHAT WE DO"
@@ -341,72 +345,29 @@ export function ServicesSection() {
           </div>
         </AnimatedSection>
 
-        <StaggerContainer
-          staggerDelay={0.1}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {services.map((service, index) => (
-            <StaggerItem key={index}>
-              <Card
-                className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 cursor-pointer relative"
-                onClick={() => isAdmin ? setEditingIndex(index) : setSelectedService(service)}
-              >
-                {isAdmin && (
-                  <div className="absolute top-2 right-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                    Click to edit
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base mb-4">
-                    {service.description}
-                  </CardDescription>
-                  <ul className="space-y-1.5 text-sm text-muted-foreground">
-                    {service.highlights.map((highlight, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto">
-                    {isAdmin ? 'Edit service →' : 'What does this mean? →'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
-=======
-          <div className="text-center mb-12 px-4">
-            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
-              WHAT WE DO
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Smart Solutions, Built for Business
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We specialize in building intuitive systems that simplify complex technology
-              and empower service businesses to scale.
-            </p>
-          </div>
-        </AnimatedSection>
-
         <AnimatedSection direction="up" delay={0.2}>
-          <div className="relative max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+          <div className="relative max-w-2xl mx-auto px-4">
             <Carousel
-              items={serviceItems}
-              gap={0}
+              setApi={setApi}
+              opts={{ loop: true }}
+              plugins={[Autoplay({ delay: 6000, stopOnInteraction: false })]}
               className="py-4"
             >
-              <AutoplayController duration={8000} />
-              <Pagination />
+              <CarouselContent>
+                {services.map((service, index) => (
+                  <CarouselItem key={index}>
+                    <ServiceCard
+                      service={service}
+                      isAdmin={isAdmin}
+                      onClick={() => isAdmin ? setEditingIndex(index) : setSelectedService(service)}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
             </Carousel>
+            <Pagination count={count} current={current} onSelect={scrollTo} />
           </div>
         </AnimatedSection>
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
         {selectedService && !isAdmin && (
           <ServiceDialog

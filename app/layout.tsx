@@ -51,16 +51,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-<<<<<<< HEAD
-        <ThemeProvider defaultTheme="system" storageKey="theme">
+        <ThemeProvider defaultTheme="dark" storageKey="theme">
           <AdminProvider>
             {children}
             <AdminLogin />
           </AdminProvider>
-=======
-        <ThemeProvider defaultTheme="dark" storageKey="theme">
-          {children}
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
         </ThemeProvider>
       </body>
     </html>

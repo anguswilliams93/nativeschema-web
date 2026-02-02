@@ -1,15 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Carousel, useCarousel } from 'motion-plus/react'
-import { animate, useMotionValue, motion } from 'motion/react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
+import Autoplay from 'embla-carousel-autoplay'
 import { AnimatedSection } from '@/components/animated-section'
-<<<<<<< HEAD
 import { EditableText } from '@/components/editable-text'
-=======
 import { Quote } from 'lucide-react'
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
 const testimonials = [
   {
@@ -56,38 +58,18 @@ const testimonials = [
   },
 ]
 
-function AutoplayController({ duration = 6000 }: { duration?: number }) {
-  const { currentPage, nextPage } = useCarousel()
-  const progress = useMotionValue(0)
-
-  useEffect(() => {
-    const animation = animate(progress, [0, 1], {
-      duration: duration / 1000,
-      ease: 'linear',
-      onComplete: nextPage,
-    })
-
-    return () => animation.stop()
-  }, [duration, nextPage, progress, currentPage])
-
-  return null
-}
-
-function Pagination() {
-  const { currentPage, totalPages, gotoPage } = useCarousel()
-
+function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
   return (
     <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: totalPages }, (_, index) => (
-        <motion.button
+      {Array.from({ length: count }, (_, index) => (
+        <button
           key={index}
-          initial={false}
-          animate={{
-            scale: currentPage === index ? 1.2 : 1,
-            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
-          }}
-          className="w-2 h-2 rounded-full transition-colors"
-          onClick={() => gotoPage(index)}
+          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            current === index
+              ? 'bg-primary scale-125'
+              : 'bg-muted hover:bg-muted-foreground/50'
+          }`}
+          onClick={() => onSelect(index)}
           aria-label={`Go to testimonial ${index + 1}`}
         />
       ))}
@@ -121,86 +103,75 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
 }
 
 export function SocialProofSection() {
-  const testimonialItems = testimonials.map((testimonial, index) => (
-    <TestimonialCard key={index} testimonial={testimonial} />
-  ))
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+  const onSelect = useCallback(() => {
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+  }, [api])
+
+  useEffect(() => {
+    if (!api) return
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap())
+    api.on('select', onSelect)
+    return () => {
+      api.off('select', onSelect)
+    }
+  }, [api, onSelect])
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      api?.scrollTo(index)
+    },
+    [api]
+  )
 
   return (
     <section id="testimonials" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
       <div className="w-full">
-        {/* Testimonials Carousel */}
         <AnimatedSection direction="up">
-<<<<<<< HEAD
-          <div className="max-w-6xl mx-auto px-4">
-            <Card className="bg-muted/50 border-none mb-16">
-              <CardContent className="py-12 px-8 md:px-16">
-                <div className="max-w-3xl mx-auto text-center">
-                  <svg
-                    className="w-12 h-12 text-primary/30 mx-auto mb-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                  </svg>
-                  <blockquote className="text-xl md:text-2xl font-medium mb-6 leading-relaxed">
-                    <EditableText
-                      storageKey="testimonial-quote"
-                      defaultValue="Native Schema understood our challenges from day one. Their solutions have transformed how we operate, giving us the efficiency and insights we needed to scale our business."
-                      as="span"
-                    />
-                  </blockquote>
-                  <div className="flex flex-col items-center">
-                    <EditableText
-                      storageKey="testimonial-name"
-                      defaultValue="Mario Dallas"
-                      as="p"
-                      className="font-semibold"
-                    />
-                    <EditableText
-                      storageKey="testimonial-title"
-                      defaultValue="CEO"
-                      as="p"
-                      className="text-muted-foreground text-sm"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-=======
           <div className="text-center mb-12 px-4">
-            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
-              TESTIMONIALS
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              What Our Clients Say
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We&apos;re proud to partner with businesses who trust us to deliver exceptional results.
-            </p>
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
+            <EditableText
+              storageKey="testimonials-label"
+              defaultValue="TESTIMONIALS"
+              as="p"
+              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+            />
+            <EditableText
+              storageKey="testimonials-title"
+              defaultValue="What Our Clients Say"
+              as="h2"
+              className="text-3xl md:text-4xl font-bold mb-4"
+            />
+            <EditableText
+              storageKey="testimonials-description"
+              defaultValue="We're proud to partner with businesses who trust us to deliver exceptional results."
+              as="p"
+              className="text-muted-foreground max-w-2xl mx-auto"
+            />
           </div>
         </AnimatedSection>
 
         <AnimatedSection direction="up" delay={0.2}>
-<<<<<<< HEAD
-          <div className="text-center px-4">
-            <EditableText
-              storageKey="partners-label"
-              defaultValue="TRUSTED PARTNERSHIPS"
-              as="p"
-              className="text-sm tracking-[0.3em] text-muted-foreground mb-8 font-medium"
-            />
-=======
-          <div className="relative mb-16 max-w-4xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+          <div className="relative max-w-4xl mx-auto px-4">
             <Carousel
-              items={testimonialItems}
-              gap={0}
+              setApi={setApi}
+              opts={{ loop: true }}
+              plugins={[Autoplay({ delay: 6000, stopOnInteraction: false })]}
               className="py-4"
             >
-              <AutoplayController duration={6000} />
-              <Pagination />
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index}>
+                    <TestimonialCard testimonial={testimonial} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
             </Carousel>
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
+            <Pagination count={count} current={current} onSelect={scrollTo} />
           </div>
         </AnimatedSection>
       </div>

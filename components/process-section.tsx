@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedSection } from '@/components/animated-section'
-<<<<<<< HEAD
-import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
+import Autoplay from 'embla-carousel-autoplay'
 import { EditableText } from '@/components/editable-text'
-=======
-import { Carousel, useCarousel } from 'motion-plus/react'
-import { animate, useMotionValue, motion } from 'motion/react'
 import {
   Search,
   ClipboardList,
@@ -19,7 +21,6 @@ import {
   Headset,
   type LucideIcon
 } from 'lucide-react'
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
 
 interface Step {
   number: string
@@ -81,38 +82,18 @@ const steps: Step[] = [
   },
 ]
 
-function AutoplayController({ duration = 4000 }: { duration?: number }) {
-  const { currentPage, nextPage } = useCarousel()
-  const progress = useMotionValue(0)
-
-  useEffect(() => {
-    const animation = animate(progress, [0, 1], {
-      duration: duration / 1000,
-      ease: 'linear',
-      onComplete: nextPage,
-    })
-
-    return () => animation.stop()
-  }, [duration, nextPage, progress, currentPage])
-
-  return null
-}
-
-function Pagination() {
-  const { currentPage, totalPages, gotoPage } = useCarousel()
-
+function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
   return (
     <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: totalPages }, (_, index) => (
-        <motion.button
+      {Array.from({ length: count }, (_, index) => (
+        <button
           key={index}
-          initial={false}
-          animate={{
-            scale: currentPage === index ? 1.2 : 1,
-            backgroundColor: currentPage === index ? 'var(--primary)' : 'var(--muted)',
-          }}
-          className="w-2 h-2 rounded-full transition-colors"
-          onClick={() => gotoPage(index)}
+          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            current === index
+              ? 'bg-primary scale-125'
+              : 'bg-muted hover:bg-muted-foreground/50'
+          }`}
+          onClick={() => onSelect(index)}
           aria-label={`Go to slide ${index + 1}`}
         />
       ))}
@@ -146,16 +127,37 @@ function ProcessCard({ step }: { step: Step }) {
 }
 
 export function ProcessSection() {
-  const carouselItems = steps.map((step, index) => (
-    <ProcessCard key={index} step={step} />
-  ))
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+  const onSelect = useCallback(() => {
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+  }, [api])
+
+  useEffect(() => {
+    if (!api) return
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap())
+    api.on('select', onSelect)
+    return () => {
+      api.off('select', onSelect)
+    }
+  }, [api, onSelect])
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      api?.scrollTo(index)
+    },
+    [api]
+  )
 
   return (
     <section id="process" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
-<<<<<<< HEAD
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 px-4">
             <EditableText
               storageKey="process-label"
               defaultValue="OUR APPROACH"
@@ -177,66 +179,25 @@ export function ProcessSection() {
           </div>
         </AnimatedSection>
 
-        <StaggerContainer
-          staggerDelay={0.15}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          {steps.map((step, index) => (
-            <StaggerItem key={index}>
-              <Card className="h-full bg-background border-none shadow-none">
-                <CardHeader className="text-center pb-4">
-                  <span className="text-5xl md:text-6xl font-bold text-primary/20 mb-4">
-                    {step.number}
-                  </span>
-                  <CardTitle className="text-2xl">
-                    <EditableText
-                      storageKey={`process-step-${index}-title`}
-                      defaultValue={step.title}
-                      as="span"
-                    />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base text-center">
-                    <EditableText
-                      storageKey={`process-step-${index}-description`}
-                      defaultValue={step.description}
-                      as="span"
-                    />
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
-=======
-          <div className="text-center mb-12 px-4">
-            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
-              OUR APPROACH
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              How We Work
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              A structured, transparent process that delivers results.
-              We believe in collaboration, iteration, and precision.
-            </p>
-          </div>
-        </AnimatedSection>
-
         <AnimatedSection direction="up" delay={0.2}>
-          <div className="relative max-w-3xl mx-auto px-4" style={{ maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+          <div className="relative max-w-3xl mx-auto px-4">
             <Carousel
-              items={carouselItems}
-              gap={0}
+              setApi={setApi}
+              opts={{ loop: true }}
+              plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
               className="py-4"
             >
-              <AutoplayController duration={5000} />
-              <Pagination />
+              <CarouselContent>
+                {steps.map((step, index) => (
+                  <CarouselItem key={index}>
+                    <ProcessCard step={step} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
             </Carousel>
+            <Pagination count={count} current={current} onSelect={scrollTo} />
           </div>
         </AnimatedSection>
->>>>>>> 4fb72b88865c555a80bff66ad6b6600d97e9d681
       </div>
     </section>
   )
