@@ -1,14 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Typewriter } from 'motion-plus/react'
 import { AnimatedSection } from '@/components/animated-section'
 import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
+import { EditableText } from '@/components/editable-text'
+import { useAdmin } from '@/components/admin-provider'
 
-const services = [
+interface Service {
+  title: string
+  description: string
+  highlights: string[]
+  simpleExplanation: string
+}
+
+const defaultServices: Service[] = [
   {
     title: 'Power BI Consulting & Dashboards',
     description: 'Custom Power BI dashboards tailored to your business. Executive reporting, financial performance, marketing ROI, and operational KPIs — all connected to your systems and updated automatically.',
@@ -84,7 +95,7 @@ const services = [
 ]
 
 function ServiceDialog({ service, open, onOpenChange }: {
-  service: typeof services[0]
+  service: Service
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -114,24 +125,130 @@ function ServiceDialog({ service, open, onOpenChange }: {
   )
 }
 
+function EditServiceDialog({
+  service,
+  open,
+  onOpenChange,
+  onSave
+}: {
+  service: Service
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSave: (service: Service) => void
+}) {
+  const [editData, setEditData] = useState(service)
+  const [highlightsText, setHighlightsText] = useState(service.highlights.join('\n'))
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Edit Service</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 mt-4">
+          <div>
+            <label className="text-sm font-medium">Title</label>
+            <Input
+              value={editData.title}
+              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Description</label>
+            <Textarea
+              value={editData.description}
+              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Highlights (one per line)</label>
+            <Textarea
+              value={highlightsText}
+              onChange={(e) => setHighlightsText(e.target.value)}
+              rows={5}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Simple Explanation</label>
+            <Textarea
+              value={editData.simpleExplanation}
+              onChange={(e) => setEditData({ ...editData, simpleExplanation: e.target.value })}
+              rows={5}
+              className="mt-1"
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => {
+            onSave({ ...editData, highlights: highlightsText.split('\n').map(h => h.trim()).filter(Boolean) })
+            onOpenChange(false)
+          }}>
+            Save
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export function ServicesSection() {
-  const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null)
+  const { isAdmin } = useAdmin()
+  const [services, setServices] = useState<Service[]>(defaultServices)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('content-services')
+    if (stored) {
+      try {
+        setServices(JSON.parse(stored))
+      } catch {
+        setServices(defaultServices)
+      }
+    }
+  }, [])
+
+  const saveServices = (newServices: Service[]) => {
+    setServices(newServices)
+    localStorage.setItem('content-services', JSON.stringify(newServices))
+  }
+
+  const handleSaveService = (index: number, service: Service) => {
+    const newServices = [...services]
+    newServices[index] = service
+    saveServices(newServices)
+  }
 
   return (
     <section id="services" className="min-h-screen flex items-center py-24 px-4 bg-muted/30">
       <div className="max-w-6xl mx-auto w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-16">
-            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
-              WHAT WE DO
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Smart Solutions, Built for Business
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We specialize in building intuitive systems that simplify complex technology
-              and empower service businesses to scale.
-            </p>
+            <EditableText
+              storageKey="services-label"
+              defaultValue="WHAT WE DO"
+              as="p"
+              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+            />
+            <EditableText
+              storageKey="services-title"
+              defaultValue="Smart Solutions, Built for Business"
+              as="h2"
+              className="text-3xl md:text-4xl font-bold mb-4"
+            />
+            <EditableText
+              storageKey="services-description"
+              defaultValue="We specialize in building intuitive systems that simplify complex technology and empower service businesses to scale."
+              as="p"
+              className="text-muted-foreground max-w-2xl mx-auto"
+            />
           </div>
         </AnimatedSection>
 
@@ -142,9 +259,14 @@ export function ServicesSection() {
           {services.map((service, index) => (
             <StaggerItem key={index}>
               <Card
-                className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 cursor-pointer"
-                onClick={() => setSelectedService(service)}
+                className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 cursor-pointer relative"
+                onClick={() => isAdmin ? setEditingIndex(index) : setSelectedService(service)}
               >
+                {isAdmin && (
+                  <div className="absolute top-2 right-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded">
+                    Click to edit
+                  </div>
+                )}
                 <CardHeader>
                   <CardTitle className="text-xl">{service.title}</CardTitle>
                 </CardHeader>
@@ -161,7 +283,7 @@ export function ServicesSection() {
                     ))}
                   </ul>
                   <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto">
-                    What does this mean? →
+                    {isAdmin ? 'Edit service →' : 'What does this mean? →'}
                   </Button>
                 </CardContent>
               </Card>
@@ -169,11 +291,20 @@ export function ServicesSection() {
           ))}
         </StaggerContainer>
 
-        {selectedService && (
+        {selectedService && !isAdmin && (
           <ServiceDialog
             service={selectedService}
             open={!!selectedService}
             onOpenChange={(open) => !open && setSelectedService(null)}
+          />
+        )}
+
+        {editingIndex !== null && isAdmin && (
+          <EditServiceDialog
+            service={services[editingIndex]}
+            open={editingIndex !== null}
+            onOpenChange={(open) => !open && setEditingIndex(null)}
+            onSave={(service) => handleSaveService(editingIndex, service)}
           />
         )}
       </div>

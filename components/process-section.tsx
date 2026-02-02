@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedSection } from '@/components/animated-section'
 import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
+import { EditableText } from '@/components/editable-text'
 
 const steps = [
   {
@@ -28,16 +29,24 @@ export function ProcessSection() {
       <div className="max-w-6xl mx-auto w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-16">
-            <p className="text-sm tracking-[0.3em] text-primary mb-4 font-medium">
-              OUR APPROACH
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              How We Work
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              A structured, transparent process that delivers results.
-              We believe in collaboration, iteration, and precision.
-            </p>
+            <EditableText
+              storageKey="process-label"
+              defaultValue="OUR APPROACH"
+              as="p"
+              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+            />
+            <EditableText
+              storageKey="process-title"
+              defaultValue="How We Work"
+              as="h2"
+              className="text-3xl md:text-4xl font-bold mb-4"
+            />
+            <EditableText
+              storageKey="process-description"
+              defaultValue="A structured, transparent process that delivers results. We believe in collaboration, iteration, and precision."
+              as="p"
+              className="text-muted-foreground max-w-2xl mx-auto"
+            />
           </div>
         </AnimatedSection>
 
@@ -52,11 +61,21 @@ export function ProcessSection() {
                   <span className="text-5xl md:text-6xl font-bold text-primary/20 mb-4">
                     {step.number}
                   </span>
-                  <CardTitle className="text-2xl">{step.title}</CardTitle>
+                  <CardTitle className="text-2xl">
+                    <EditableText
+                      storageKey={`process-step-${index}-title`}
+                      defaultValue={step.title}
+                      as="span"
+                    />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-base text-center">
-                    {step.description}
+                    <EditableText
+                      storageKey={`process-step-${index}-description`}
+                      defaultValue={step.description}
+                      as="span"
+                    />
                   </CardDescription>
                 </CardContent>
               </Card>
