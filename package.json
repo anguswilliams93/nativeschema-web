@@ -10,6 +10,7 @@
     "postinstall": "node -e \"if(process.env.MOTION_PLUS_TOKEN) require('child_process').execSync('npm install https://api.motion.dev/registry.tgz?package=motion-plus&version=2.0.2&token='+process.env.MOTION_PLUS_TOKEN, {stdio:'inherit'})\""
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.4.1",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
@@ -22,6 +23,7 @@
     "next": "^16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.9.1",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

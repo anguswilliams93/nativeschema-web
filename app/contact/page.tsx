@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,7 +15,64 @@ const socialLinks = [
   { name: 'X', href: 'https://x.com/nativeschema' },
 ]
 
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
+
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    company: '',
+    service: '',
+    message: '',
+  })
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setStatus('loading')
+    setErrorMessage('')
+
+    // Client-side email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setStatus('error')
+      setErrorMessage('Please enter a valid email address')
+      return
+    }
+
+    if (!turnstileToken) {
+      setStatus('error')
+      setErrorMessage('Please complete the security check')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, turnstileToken }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+
+      setStatus('success')
+      setFormData({ name: '', email: '', company: '', service: '', message: '' })
+    } catch (error) {
+      setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Something went wrong')
+    }
+  }
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -48,46 +107,99 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
             {/* Contact Form */}
             <AnimatedSection direction="left" delay={0.2} className="lg:col-span-3">
-              <form className="space-y-6 bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 md:p-10 shadow-xl">
+              <form onSubmit={handleSubmit} className="space-y-6 bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 md:p-10 shadow-xl">
+                {status === 'success' && (
+                  <div className="p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-600 dark:text-green-400 text-center">
+                    Thank you! Your message has been sent. We&apos;ll be in touch soon.
+                  </div>
+                )}
+                {status === 'error' && errorMessage && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-600 dark:text-red-400 text-center">
+                    {errorMessage}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                      Name
+                      Name <span className="text-red-500">*</span>
                     </label>
-                    <Input id="name" placeholder="Your name" className="h-12" />
+                    <Input
+                      id="name"
+                      placeholder="Your name"
+                      className="h-12"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                      Email
+                      Email <span className="text-red-500">*</span>
                     </label>
-                    <Input id="email" type="email" placeholder="your@email.com" className="h-12" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="h-12"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="company" className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
                     Company
                   </label>
-                  <Input id="company" placeholder="Your company name" className="h-12" />
+                  <Input
+                    id="company"
+                    placeholder="Your company name"
+                    className="h-12"
+                    value={formData.company}
+                    onChange={handleChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="service" className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
                     Service Interested In
                   </label>
-                  <Input id="service" placeholder="e.g., Power BI, Custom Software, Integrations" className="h-12" />
+                  <Input
+                    id="service"
+                    placeholder="e.g., Power BI, Custom Software, Integrations"
+                    className="h-12"
+                    value={formData.service}
+                    onChange={handleChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                    Message
+                    Message <span className="text-red-500">*</span>
                   </label>
                   <Textarea
                     id="message"
                     placeholder="Tell us about your project..."
                     rows={6}
                     className="resize-none"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
-                <Button type="submit" size="lg" className="w-full h-14 text-lg font-semibold">
-                  Send Message
+                <div className="flex justify-center">
+                  <Turnstile
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={setTurnstileToken}
+                    onError={() => setTurnstileToken(null)}
+                    onExpire={() => setTurnstileToken(null)}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-14 text-lg font-semibold"
+                  disabled={status === 'loading'}
+                >
+                  {status === 'loading' ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </AnimatedSection>
@@ -101,10 +213,10 @@ export default function ContactPage() {
                     Email Us
                   </h3>
                   <a
-                    href="mailto:di@nativeschema.com"
+                    href="mailto:hello@nativeschema.com"
                     className="text-2xl font-bold hover:text-primary transition-colors block"
                   >
-                    di@nativeschema.com
+                    hello@nativeschema.com
                   </a>
                   <p className="text-muted-foreground mt-2 text-sm">
                     For all inquiries, project discussions, and support
