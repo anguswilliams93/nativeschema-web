@@ -66,9 +66,8 @@ export async function POST(request: Request) {
     }
 
     // Send email via Resend
-    // TODO: Change 'to' to hello@nativeschema.com once domain is fully verified
     const { error } = await resend.emails.send({
-      from: 'Native Schema <contact@noreply.nativeschema.com>',
+      from: 'contact@noreply.nativeschema.com',
       to: 'hello@nativeschema.com',
       replyTo: email,
       subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
