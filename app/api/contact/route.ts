@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     console.log('Sending email via Resend...')
     const { data, error } = await resend.emails.send({
       from: 'contact@noreply.nativeschema.com',
-      to: 'hello@nativeschema.com',
+      to: 'angus@nativeschema.com',
       replyTo: email,
       subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
       text: `
