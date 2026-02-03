@@ -13,18 +13,24 @@ interface ContactFormData {
   turnstileToken: string
 }
 
-async function verifyTurnstile(token: string): Promise<boolean> {
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      secret: TURNSTILE_SECRET || '',
-      response: token,
-    }),
-  })
+async function verifyTurnstile(token: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        secret: TURNSTILE_SECRET || '',
+        response: token,
+      }),
+    })
 
-  const data = await response.json()
-  return data.success
+    const data = await response.json()
+    console.log('Turnstile verification response:', data)
+    return { success: data.success, error: data['error-codes']?.join(', ') }
+  } catch (err) {
+    console.error('Turnstile verification error:', err)
+    return { success: false, error: 'Verification request failed' }
+  }
 }
 
 export async function POST(request: Request) {
@@ -57,16 +63,18 @@ export async function POST(request: Request) {
       )
     }
 
-    const isValidToken = await verifyTurnstile(turnstileToken)
-    if (!isValidToken) {
+    const turnstileResult = await verifyTurnstile(turnstileToken)
+    if (!turnstileResult.success) {
+      console.error('Turnstile failed:', turnstileResult.error)
       return NextResponse.json(
-        { error: 'Security verification failed. Please try again.' },
+        { error: `Security verification failed: ${turnstileResult.error || 'Please try again.'}` },
         { status: 400 }
       )
     }
 
     // Send email via Resend
-    const { error } = await resend.emails.send({
+    console.log('Sending email via Resend...')
+    const { data, error } = await resend.emails.send({
       from: 'contact@noreply.nativeschema.com',
       to: 'hello@nativeschema.com',
       replyTo: email,
@@ -95,11 +103,12 @@ ${message}
     if (error) {
       console.error('Resend error:', error)
       return NextResponse.json(
-        { error: 'Failed to send message. Please try again.' },
+        { error: `Failed to send message: ${error.message}` },
         { status: 500 }
       )
     }
 
+    console.log('Email sent successfully:', data)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Contact form error:', error)
