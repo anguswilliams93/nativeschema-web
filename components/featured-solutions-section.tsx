@@ -27,6 +27,14 @@ interface Solution {
 
 const defaultSolutions: Solution[] = [
   {
+    title: 'TaxWatch',
+    year: '2026',
+    category: 'Open Source / Civic Tech',
+    description: 'Track Australian government spending, monitor parliamentary bills, and stay informed with aggregated political news. Transparency and accountability for every taxpayer.',
+    features: ['Spending Tracker', 'Bill Monitoring', 'News Aggregation', 'Open Source'],
+    link: 'https://preferred-jet.vercel.app/',
+  },
+  {
     title: 'Zerobi Pty Ltd',
     year: '2025',
     category: 'Website Design',
