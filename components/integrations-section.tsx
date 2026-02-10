@@ -5,7 +5,7 @@ import { AppIntegration } from '@/components/app-integration'
 
 export function IntegrationsSection() {
   return (
-    <section id="integrations" className="py-24 bg-muted/30 overflow-hidden">
+    <section id="integrations" className="py-24 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4">
         <AnimatedSection direction="up">
           <div className="text-center mb-8">

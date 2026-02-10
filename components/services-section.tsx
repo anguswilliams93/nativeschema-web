@@ -320,7 +320,7 @@ export function ServicesSection() {
   )
 
   return (
-    <section id="services" className="min-h-screen flex items-center py-24 bg-muted/30 overflow-hidden">
+    <section id="services" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-12 px-4">
