@@ -396,6 +396,9 @@ export default function ContactPage() {
             <Link href="/services" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Services
             </Link>
+            <Link href="/industries" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              Industries
+            </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Contact
             </Link>

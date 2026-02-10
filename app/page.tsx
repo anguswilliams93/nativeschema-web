@@ -8,12 +8,10 @@ import { ProcessSection } from '@/components/process-section'
 import { SocialProofSection } from '@/components/social-proof-section'
 import { ArticlesSection } from '@/components/articles-section'
 import { ContactSection } from '@/components/contact-section'
-import { StickyNav } from '@/components/sticky-nav'
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <StickyNav />
       <HeroSection />
       <ServicesSection />
       <IntegrationsSection />

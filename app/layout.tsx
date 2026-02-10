@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AdminProvider } from "@/components/admin-provider";
 import { AdminLogin } from "@/components/admin-login";
+import { StickyNav } from "@/components/sticky-nav";
 import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider defaultTheme="dark" storageKey="theme">
           <AdminProvider>
+            <StickyNav />
             {children}
             <AdminLogin />
           </AdminProvider>

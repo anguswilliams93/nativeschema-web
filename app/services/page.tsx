@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { AnimatedSection } from '@/components/animated-section'
-import { StickyNav } from '@/components/sticky-nav'
 import { LogoHorizontal } from '@/components/logo'
 
 interface Service {
@@ -265,6 +264,9 @@ export default function ServicesPage() {
             </Link>
             <Link href="/services" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Services
+            </Link>
+            <Link href="/industries" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              Industries
             </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Contact
