@@ -30,7 +30,7 @@ const sources: AppIcon[] = [
   },
   {
     name: 'Salesforce',
-    icon: 'https://www.salesforce.com/etc/designs/sfdc-www/en_us/favicon.ico',
+    icon: 'https://img.icons8.com/color/48/salesforce.png',
     bgColor: 'bg-sky-600/10 dark:bg-sky-400/10',
   },
 ]
