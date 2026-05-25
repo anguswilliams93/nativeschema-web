@@ -109,7 +109,7 @@ function ProcessCard({ step }: { step: Step }) {
         <div className="mb-3 flex justify-center">
           <Icon className="w-12 h-12 text-primary" strokeWidth={1.5} />
         </div>
-        <span className="text-xs tracking-[0.2em] text-primary font-medium uppercase">
+        <span className="text-eyebrow">
           {step.subtitle}
         </span>
         <CardTitle className="text-xl md:text-2xl mt-2">
@@ -162,13 +162,13 @@ export function ProcessSection() {
               storageKey="process-label"
               defaultValue="OUR APPROACH"
               as="p"
-              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+              className="text-eyebrow mb-4"
             />
             <EditableText
               storageKey="process-title"
               defaultValue="How We Work"
               as="h2"
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4"
             />
             <EditableText
               storageKey="process-description"

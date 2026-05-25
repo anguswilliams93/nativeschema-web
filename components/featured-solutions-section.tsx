@@ -166,7 +166,7 @@ function EditableSolutionCard({
 
   return (
     <Card
-      className={`w-[90vw] max-w-lg border-2 hover:border-primary/30 transition-colors select-none mx-auto ${isAdmin ? 'cursor-pointer' : ''}`}
+      className={`neon-hover w-[90vw] max-w-lg border-2 select-none mx-auto ${isAdmin ? 'cursor-pointer' : ''}`}
       onClick={() => isAdmin && setEditing(true)}
     >
       <CardHeader className="pb-4">
@@ -276,13 +276,13 @@ export function FeaturedSolutionsSection() {
               storageKey="solutions-label"
               defaultValue="FEATURED WORK"
               as="p"
-              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+              className="text-eyebrow mb-4"
             />
             <EditableText
               storageKey="solutions-title"
               defaultValue="Solutions That Drive Real Change"
               as="h2"
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4"
             />
             <EditableText
               storageKey="solutions-description"

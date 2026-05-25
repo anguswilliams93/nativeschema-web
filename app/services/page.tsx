@@ -195,10 +195,10 @@ export default function ServicesPage() {
               <Link href="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
                 <LogoHorizontal className="h-10 w-auto mx-auto" />
               </Link>
-              <span className="text-sm tracking-[0.3em] text-primary mb-4 font-medium block">
+              <span className="text-eyebrow mb-4 block">
                 OUR SERVICES
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-[1.02]">
                 Smart Solutions,{' '}
                 <span className="text-primary bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Built for Business
@@ -233,7 +233,7 @@ export default function ServicesPage() {
       <section className="py-24 px-4 bg-background">
         <div className="max-w-4xl mx-auto text-center">
           <AnimatedSection direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-semibold mb-6">
               Ready to Get Started?
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">

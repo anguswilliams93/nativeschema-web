@@ -1,6 +1,8 @@
 'use client'
 
 import * as React from 'react'
+import { MotionConfig } from 'motion/react'
+import { EASE_OUT } from '@/lib/motion'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -45,7 +47,9 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext.Provider value={{ theme, setTheme }}>
-      {children}
+      <MotionConfig reducedMotion="user" transition={{ duration: 0.6, ease: EASE_OUT }}>
+        {children}
+      </MotionConfig>
     </ThemeProviderContext.Provider>
   )
 }

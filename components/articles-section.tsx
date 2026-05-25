@@ -249,13 +249,13 @@ export function ArticlesSection() {
               storageKey="articles-label"
               defaultValue="JOURNAL"
               as="p"
-              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+              className="text-eyebrow mb-4"
             />
             <EditableText
               storageKey="articles-title"
               defaultValue="Insights & Perspectives"
               as="h2"
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4"
             />
             <EditableText
               storageKey="articles-description"

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { AnimatedSection } from '@/components/animated-section'
+import { TextReveal } from '@/components/text-reveal'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LogoHorizontal } from '@/components/logo'
 
@@ -77,12 +78,13 @@ export function HeroSection() {
           </div>
         </AnimatedSection>
 
-        {/* Main headline */}
-        <AnimatedSection direction="up" delay={0.3}>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-8 text-foreground">
-            Smart systems for service businesses
-          </h1>
-        </AnimatedSection>
+        {/* Main headline — masked word-rise reveal */}
+        <TextReveal
+          as="h1"
+          text="Smart systems for service businesses"
+          delay={0.3}
+          className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 text-foreground text-balance"
+        />
 
         {/* Subheading */}
         <AnimatedSection direction="up" delay={0.5}>

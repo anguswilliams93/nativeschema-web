@@ -61,7 +61,7 @@ const Navbar = ({
                 >
                   {isHash ? (
                     <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
+                      className={cn(navigationMenuTriggerStyle(), 'neon-underline bg-transparent hover:bg-transparent focus:bg-transparent')}
                       onClick={(e) => {
                         e.preventDefault()
                         const el = document.querySelector(item.href)
@@ -80,7 +80,7 @@ const Navbar = ({
                     <NavigationMenuLink
                       asChild
                       active={isActive}
-                      className={navigationMenuTriggerStyle()}
+                      className={cn(navigationMenuTriggerStyle(), 'neon-underline bg-transparent hover:bg-transparent focus:bg-transparent')}
                     >
                       <Link href={item.href}>{item.title}</Link>
                     </NavigationMenuLink>

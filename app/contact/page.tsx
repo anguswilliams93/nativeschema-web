@@ -180,10 +180,10 @@ export default function ContactPage() {
               <Link href="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
                 <LogoHorizontal className="h-10 w-auto mx-auto" />
               </Link>
-              <span className="text-sm tracking-[0.3em] text-primary mb-4 font-medium block">
+              <span className="text-eyebrow mb-4 block">
                 GET IN TOUCH
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-[1.02]">
                 Let&apos;s Build Something{' '}
                 <span className="text-primary bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Great Together

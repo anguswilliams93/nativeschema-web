@@ -138,13 +138,13 @@ export function SocialProofSection() {
               storageKey="testimonials-label"
               defaultValue="TESTIMONIALS"
               as="p"
-              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+              className="text-eyebrow mb-4"
             />
             <EditableText
               storageKey="testimonials-title"
               defaultValue="What Our Clients Say"
               as="h2"
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4"
             />
             <EditableText
               storageKey="testimonials-description"

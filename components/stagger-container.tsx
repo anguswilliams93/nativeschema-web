@@ -2,6 +2,7 @@
 
 import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'
+import { EASE_OUT, DURATION, VIEWPORT } from '@/lib/motion'
 
 interface StaggerContainerProps {
   children: React.ReactNode
@@ -15,7 +16,7 @@ export function StaggerContainer({
   className = '',
 }: StaggerContainerProps) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const isInView = useInView(ref, VIEWPORT)
 
   return (
     <motion.div
@@ -51,8 +52,8 @@ export function StaggerItem({ children, className = '' }: StaggerItemProps) {
           y: 0,
           opacity: 1,
           transition: {
-            duration: 0.5,
-            ease: [0.25, 0.46, 0.45, 0.94],
+            duration: DURATION.fast,
+            ease: EASE_OUT,
           },
         },
       }}

@@ -2,6 +2,7 @@
 
 import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'
+import { EASE_OUT, DURATION, VIEWPORT } from '@/lib/motion'
 
 interface AnimatedSectionProps {
   children: React.ReactNode
@@ -24,7 +25,7 @@ export function AnimatedSection({
   className = '',
 }: AnimatedSectionProps) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const isInView = useInView(ref, VIEWPORT)
 
   return (
     <motion.div
@@ -32,9 +33,9 @@ export function AnimatedSection({
       initial={directionVariants[direction]}
       animate={isInView ? { x: 0, y: 0, opacity: 1 } : directionVariants[direction]}
       transition={{
-        duration: 0.6,
+        duration: DURATION.base,
         delay,
-        ease: [0.25, 0.46, 0.45, 0.94],
+        ease: EASE_OUT,
       }}
       className={className}
     >

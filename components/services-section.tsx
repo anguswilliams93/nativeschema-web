@@ -231,7 +231,7 @@ function ServiceCard({
 }) {
   return (
     <Card
-      className={`w-[90vw] max-w-lg transition-all duration-300 hover:shadow-lg hover:border-primary/20 cursor-pointer select-none mx-auto ${isAdmin ? 'ring-2 ring-primary/20' : ''}`}
+      className={`neon-hover w-[90vw] max-w-lg duration-300 cursor-pointer select-none mx-auto ${isAdmin ? 'ring-2 ring-primary/20' : ''}`}
       onClick={onClick}
     >
       {isAdmin && (
@@ -257,7 +257,7 @@ function ServiceCard({
             <li className="text-primary text-xs">+{service.highlights.length - 3} more</li>
           )}
         </ul>
-        <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto">
+        <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto transition-colors hover:text-neon hover:bg-transparent">
           {isAdmin ? 'Edit service →' : 'What does this mean? →'}
         </Button>
       </CardContent>
@@ -328,13 +328,13 @@ export function ServicesSection() {
               storageKey="services-label"
               defaultValue="WHAT WE DO"
               as="p"
-              className="text-sm tracking-[0.3em] text-primary mb-4 font-medium"
+              className="text-eyebrow mb-4"
             />
             <EditableText
               storageKey="services-title"
               defaultValue="Smart Solutions, Built for Business"
               as="h2"
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4"
             />
             <EditableText
               storageKey="services-description"

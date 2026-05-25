@@ -23,11 +23,11 @@ export function ContactSection() {
         <AnimatedSection direction="up">
           <div className="text-center mb-16">
             <div className="inline-block mb-4">
-              <span className="text-sm tracking-[0.3em] text-primary font-medium uppercase">
+              <span className="text-eyebrow">
                 Let&apos;s Work Together
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-6 leading-[1.02]">
               Shape the Future of{' '}
               <span className="text-primary bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Your Business
