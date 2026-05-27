@@ -119,7 +119,7 @@ export function HeroSection() {
 
         {/* Right: seamless integration diagram */}
         <AnimatedSection direction="left" delay={0.6}>
-          <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-4 md:p-6 shadow-xl">
+          <div>
             <p className="text-eyebrow mb-4 text-center">
               How the data flows
             </p>
