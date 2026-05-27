@@ -197,7 +197,7 @@ function EditableSolutionCard({
         {solution.link ? (
           <Button variant="outline" className="w-full mt-4" asChild>
             <a href={solution.link} target="_blank" rel="noopener noreferrer">
-              See It Live →
+              See it live
             </a>
           </Button>
         ) : (
@@ -210,7 +210,7 @@ function EditableSolutionCard({
   )
 }
 
-export function FeaturedSolutionsSection() {
+export function SolutionsShowcase() {
   const { isAdmin } = useAdmin()
   const [solutions, setSolutions] = useState<Solution[]>(defaultSolutions)
 
@@ -268,8 +268,7 @@ export function FeaturedSolutionsSection() {
   )
 
   return (
-    <section id="solutions" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
-      <div className="w-full">
+    <div className="w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-12 px-4">
             <EditableText
@@ -286,7 +285,7 @@ export function FeaturedSolutionsSection() {
             />
             <EditableText
               storageKey="solutions-description"
-              defaultValue="Explore our latest projects and see how we help businesses transform their operations with smart technology."
+              defaultValue="The same approach we describe above, applied to real projects. From government spending transparency to business intelligence dashboards and custom CRMs, here is a sample of the work we have shipped for clients and the wider community."
               as="p"
               className="text-muted-foreground max-w-2xl mx-auto"
             />
@@ -317,8 +316,7 @@ export function FeaturedSolutionsSection() {
             <Pagination count={count} current={current} onSelect={scrollTo} />
           </div>
         </AnimatedSection>
-      </div>
-    </section>
+    </div>
   )
 }
 

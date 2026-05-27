@@ -1,8 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 // Resend webhook secret for verification (optional but recommended)
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET
 
@@ -210,6 +208,7 @@ async function forwardEmailToTeam({ from, to, subject, text, html }: {
   `.trim()
 
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'Native Schema <notifications@noreply.nativeschema.com>',
       to: FORWARD_TO,
@@ -339,6 +338,7 @@ Co-Founder, Native Schema
 `
 
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'Angus from Native Schema <angus@noreply.nativeschema.com>',
       to: to,

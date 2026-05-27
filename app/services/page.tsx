@@ -19,7 +19,7 @@ interface Service {
 const services: Service[] = [
   {
     title: 'Power BI Consulting & Dashboards',
-    description: 'Custom Power BI dashboards tailored to your business. Executive reporting, financial performance, marketing ROI, and operational KPIs — all connected to your systems and updated automatically.',
+    description: 'Custom Power BI dashboards tailored to your business. Executive reporting, financial performance, marketing ROI, and operational KPIs - all connected to your systems and updated automatically.',
     highlights: [
       'Executive & board reporting',
       'Financial performance & profitability',
@@ -27,11 +27,11 @@ const services: Service[] = [
       'Data integration & automation',
       'Dashboard cleanup & optimisation',
     ],
-    simpleExplanation: "Stop manually exporting spreadsheets. We create bespoke Power BI dashboards that connect directly to your accounting, CRM, practice management, and other systems. Your reports update automatically — accurate, consistent, and audit-ready. Perfect for CFOs, COOs, and directors who need clarity on revenue, profitability, WIP, and cash flow without digging through spreadsheets.",
+    simpleExplanation: "Stop manually exporting spreadsheets. We create bespoke Power BI dashboards that connect directly to your accounting, CRM, practice management, and other systems. Your reports update automatically - accurate, consistent, and audit-ready. Perfect for CFOs, COOs, and directors who need clarity on revenue, profitability, WIP, and cash flow without digging through spreadsheets.",
   },
   {
     title: 'Actionstep Workflow Design',
-    description: 'Bespoke Actionstep workflows for law firms. Matter intake, automated tasks, document generation, billing workflows, and compliance controls — designed around how your firm actually operates.',
+    description: 'Bespoke Actionstep workflows for law firms. Matter intake, automated tasks, document generation, billing workflows, and compliance controls - designed around how your firm actually operates.',
     highlights: [
       'Custom workflow design',
       'Automated tasks & deadlines',
@@ -87,7 +87,7 @@ const services: Service[] = [
       'Mobile-responsive layouts',
       'Ongoing support & updates',
     ],
-    simpleExplanation: "Sick of paying $200, $300, or more every month just to keep your website running? We build professional, fast websites using modern technology that costs a fraction of what traditional agencies charge for hosting. You get a great-looking site that actually converts visitors into clients — without the monthly hosting bill eating into your profits.",
+    simpleExplanation: "Sick of paying $200, $300, or more every month just to keep your website running? We build professional, fast websites using modern technology that costs a fraction of what traditional agencies charge for hosting. You get a great-looking site that actually converts visitors into clients - without the monthly hosting bill eating into your profits.",
   }
 ]
 
@@ -169,13 +169,13 @@ function ServiceCard({
         <ul className="space-y-1.5 text-sm text-muted-foreground mb-4">
           {service.highlights.map((highlight, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-primary mt-1">•</span>
+              <span aria-hidden className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
               {highlight}
             </li>
           ))}
         </ul>
         <Button variant="ghost" size="sm" className="text-primary p-0 h-auto">
-          Learn more →
+          Learn more
         </Button>
       </CardContent>
     </Card>
@@ -256,7 +256,7 @@ export default function ServicesPage() {
       <footer className="py-8 px-4 border-t border-border/50">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Native Schema. All rights reserved.
+            (c) {new Date().getFullYear()} Native Schema. All rights reserved.
           </p>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -267,6 +267,9 @@ export default function ServicesPage() {
             </Link>
             <Link href="/industries" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Industries
+            </Link>
+            <Link href="/how-we-work" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              How We Work
             </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Contact

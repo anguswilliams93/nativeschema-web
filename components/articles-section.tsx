@@ -175,7 +175,7 @@ function EditableArticleCard({
             {article.date}
           </span>
           <Button variant="ghost" size="sm" className="text-primary">
-            Read More →
+            Read more
           </Button>
         </div>
       </CardContent>
@@ -241,7 +241,7 @@ export function ArticlesSection() {
   )
 
   return (
-    <section id="journal" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
+    <section id="journal" className="flex items-center py-24 bg-muted/30 border-t border-border/40 overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-12 px-4">

@@ -27,7 +27,7 @@ interface Service {
 const defaultServices: Service[] = [
   {
     title: 'Power BI Consulting & Dashboards',
-    description: 'Custom Power BI dashboards tailored to your business. Executive reporting, financial performance, marketing ROI, and operational KPIs — all connected to your systems and updated automatically.',
+    description: 'Custom Power BI dashboards tailored to your business. Executive reporting, financial performance, marketing ROI, and operational KPIs - all connected to your systems and updated automatically.',
     highlights: [
       'Executive & board reporting',
       'Financial performance & profitability',
@@ -35,11 +35,11 @@ const defaultServices: Service[] = [
       'Data integration & automation',
       'Dashboard cleanup & optimisation',
     ],
-    simpleExplanation: "Stop manually exporting spreadsheets. We create bespoke Power BI dashboards that connect directly to your accounting, CRM, practice management, and other systems. Your reports update automatically — accurate, consistent, and audit-ready. Perfect for CFOs, COOs, and directors who need clarity on revenue, profitability, WIP, and cash flow without digging through spreadsheets.",
+    simpleExplanation: "Stop manually exporting spreadsheets. We create bespoke Power BI dashboards that connect directly to your accounting, CRM, practice management, and other systems. Your reports update automatically - accurate, consistent, and audit-ready. Perfect for CFOs, COOs, and directors who need clarity on revenue, profitability, WIP, and cash flow without digging through spreadsheets.",
   },
   {
     title: 'Actionstep Workflow Design',
-    description: 'Bespoke Actionstep workflows for law firms. Matter intake, automated tasks, document generation, billing workflows, and compliance controls — designed around how your firm actually operates.',
+    description: 'Bespoke Actionstep workflows for law firms. Matter intake, automated tasks, document generation, billing workflows, and compliance controls - designed around how your firm actually operates.',
     highlights: [
       'Custom workflow design',
       'Automated tasks & deadlines',
@@ -95,7 +95,7 @@ const defaultServices: Service[] = [
       'Mobile-responsive layouts',
       'Ongoing support & updates',
     ],
-    simpleExplanation: "Sick of paying $200, $300, or more every month just to keep your website running? We build professional, fast websites using modern technology that costs a fraction of what traditional agencies charge for hosting. You get a great-looking site that actually converts visitors into clients — without the monthly hosting bill eating into your profits.",
+    simpleExplanation: "Sick of paying $200, $300, or more every month just to keep your website running? We build professional, fast websites using modern technology that costs a fraction of what traditional agencies charge for hosting. You get a great-looking site that actually converts visitors into clients - without the monthly hosting bill eating into your profits.",
   }
 ]
 
@@ -249,7 +249,7 @@ function ServiceCard({
         <ul className="space-y-1.5 text-sm text-muted-foreground">
           {service.highlights.slice(0, 3).map((highlight, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-primary mt-1">•</span>
+              <span aria-hidden className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
               {highlight}
             </li>
           ))}
@@ -258,14 +258,14 @@ function ServiceCard({
           )}
         </ul>
         <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto transition-colors hover:text-neon hover:bg-transparent">
-          {isAdmin ? 'Edit service →' : 'What does this mean? →'}
+          {isAdmin ? 'Edit service' : 'What does this mean?'}
         </Button>
       </CardContent>
     </Card>
   )
 }
 
-export function ServicesSection() {
+export function ServicesShowcase() {
   const { isAdmin } = useAdmin()
   const [services, setServices] = useState<Service[]>(defaultServices)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -320,8 +320,7 @@ export function ServicesSection() {
   )
 
   return (
-    <section id="services" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
-      <div className="w-full">
+    <div className="w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-12 px-4">
             <EditableText
@@ -338,7 +337,7 @@ export function ServicesSection() {
             />
             <EditableText
               storageKey="services-description"
-              defaultValue="We specialize in building intuitive systems that simplify complex technology and empower service businesses to scale."
+              defaultValue="We design and build the systems that run underneath your business: Power BI reporting, practice management workflows, custom software, and the integrations that connect them. Everything is tailored to how your team actually works, so the technology supports the business instead of getting in the way."
               as="p"
               className="text-muted-foreground max-w-2xl mx-auto"
             />
@@ -385,7 +384,6 @@ export function ServicesSection() {
             onSave={(service) => handleSaveService(editingIndex, service)}
           />
         )}
-      </div>
-    </section>
+    </div>
   )
 }

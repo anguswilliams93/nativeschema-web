@@ -9,12 +9,12 @@ const quickLinks = [
   { name: 'Services', href: '/services' },
   { name: 'Contact', href: '/contact' },
   { name: 'Solutions', href: '#solutions' },
-  { name: 'Process', href: '#process' },
+  { name: 'How We Work', href: '/how-we-work' },
 ]
 
 export function ContactSection() {
   return (
-    <section id="contact" className="py-24 px-4 bg-background relative overflow-hidden">
+    <section id="contact" className="py-24 px-4 bg-card border-t border-border/40 relative overflow-hidden">
       {/* Background gradient decoration */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
 
@@ -34,12 +34,19 @@ export function ContactSection() {
               </span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl mb-8">
-              Ready to build smarter systems? Let&apos;s discuss how we can help
-              transform your operations.
+              Ready to build smarter systems? Book a free 30-minute scoping call
+              and we will map out exactly how connected data and Power BI
+              reporting could work for your business. No cost, no obligation,
+              just a clear plan.
             </p>
-            <Button size="lg" asChild>
-              <Link href="/contact">Get in Touch</Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" asChild>
+                <Link href="/contact#book">Book a 30-minute scope</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/contact">Get in touch</Link>
+              </Button>
+            </div>
           </div>
         </AnimatedSection>
 
@@ -76,7 +83,7 @@ export function ContactSection() {
 
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-border/30">
               <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} Native Schema. All rights reserved.
+                (c) {new Date().getFullYear()} Native Schema. All rights reserved.
               </p>
               <div className="flex gap-6 text-sm text-muted-foreground">
                 <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>

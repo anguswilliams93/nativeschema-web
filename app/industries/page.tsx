@@ -10,6 +10,8 @@ import {
   ArrowRight,
   Building2,
   Cog,
+  Check,
+  X,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,7 +34,7 @@ const industries: Industry[] = [
     icon: Monitor,
     tagline: 'Streamline your tech operations',
     description:
-      'IT companies juggle complex project pipelines, client environments, and constantly shifting priorities. We help technology businesses consolidate their tooling, automate reporting, and build internal systems that scale — so your team can focus on delivering for clients instead of wrestling with spreadsheets and disconnected platforms.',
+      'IT companies juggle complex project pipelines, client environments, and constantly shifting priorities. We help technology businesses consolidate their tooling, automate reporting, and build internal systems that scale - so your team can focus on delivering for clients instead of wrestling with spreadsheets and disconnected platforms.',
     challenges: [
       'Disconnected project management & billing systems',
       'Manual time tracking and resource allocation',
@@ -51,7 +53,7 @@ const industries: Industry[] = [
     icon: Scale,
     tagline: 'Technology that works the way your firm does',
     description:
-      'Law firms run on precision, deadlines, and trust. But too many firms are held back by clunky workflows, disconnected systems, and manual processes that eat into billable hours. We specialise in legal technology — from Actionstep workflow design to Power BI reporting — helping firms automate the admin so lawyers can focus on the law.',
+      'Law firms run on precision, deadlines, and trust. But too many firms are held back by clunky workflows, disconnected systems, and manual processes that eat into billable hours. We specialise in legal technology - from Actionstep workflow design to Power BI reporting - helping firms automate the admin so lawyers can focus on the law.',
     challenges: [
       'Generic practice management workflows that don\'t fit',
       'Manual billing, WIP tracking & trust accounting',
@@ -70,7 +72,7 @@ const industries: Industry[] = [
     icon: Briefcase,
     tagline: 'Spend less time managing, more time delivering',
     description:
-      'Whether you\'re running a consulting firm, an accounting practice, a recruitment agency, or any other service-based business — your revenue depends on your people and their time. We build systems that reduce the operational drag on your team: automated workflows, connected platforms, and dashboards that give you real-time clarity on what\'s working and what isn\'t.',
+      'Whether you\'re running a consulting firm, an accounting practice, a recruitment agency, or any other service-based business - your revenue depends on your people and their time. We build systems that reduce the operational drag on your team: automated workflows, connected platforms, and dashboards that give you real-time clarity on what\'s working and what isn\'t.',
     challenges: [
       'Revenue leakage from unbilled time and poor tracking',
       'Disconnected CRM, accounting & project management tools',
@@ -89,7 +91,7 @@ const industries: Industry[] = [
     icon: ClipboardCheck,
     tagline: 'Reclaim your time from administrative overload',
     description:
-      'If you\'re a CEO, COO, CFO, or director spending half your week chasing reports, reconciling data, or managing processes that should run themselves — we can help. We work with executives across industries to automate the repetitive, build clarity into reporting, and free up the hours you need to focus on strategy, growth, and the work that actually moves the needle.',
+      'If you\'re a CEO, COO, CFO, or director spending half your week chasing reports, reconciling data, or managing processes that should run themselves - we can help. We work with executives across industries to automate the repetitive, build clarity into reporting, and free up the hours you need to focus on strategy, growth, and the work that actually moves the needle.',
     challenges: [
       'Hours lost compiling reports from multiple systems',
       'Decision-making hampered by outdated or incomplete data',
@@ -130,7 +132,7 @@ function IndustryCard({ industry, index }: { industry: Industry; index: number }
             <ul className="space-y-1.5 text-sm text-muted-foreground">
               {industry.challenges.map((challenge, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-destructive mt-0.5 shrink-0">✕</span>
+                  <X className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                   {challenge}
                 </li>
               ))}
@@ -142,7 +144,7 @@ function IndustryCard({ industry, index }: { industry: Industry; index: number }
             <ul className="space-y-1.5 text-sm text-muted-foreground">
               {industry.solutions.map((solution, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5 shrink-0">✓</span>
+                  <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   {solution}
                 </li>
               ))}
@@ -220,7 +222,7 @@ export default function IndustriesPage() {
                 </div>
                 <h3 className="font-semibold mb-2">Automate the Repetitive</h3>
                 <p className="text-sm text-muted-foreground">
-                  Stop doing manually what a well-designed system can handle for you — accurately
+                  Stop doing manually what a well-designed system can handle for you - accurately
                   and consistently.
                 </p>
               </div>
@@ -261,7 +263,7 @@ export default function IndustriesPage() {
               Don&apos;t See Your Industry?
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-              If your business runs on people, processes, and data — we can probably help.
+              If your business runs on people, processes, and data - we can probably help.
               Get in touch and let&apos;s talk about what smarter systems could look like for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -280,7 +282,7 @@ export default function IndustriesPage() {
       <footer className="py-8 px-4 border-t border-border/50">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Native Schema. All rights reserved.
+            (c) {new Date().getFullYear()} Native Schema. All rights reserved.
           </p>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -291,6 +293,9 @@ export default function IndustriesPage() {
             </Link>
             <Link href="/industries" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Industries
+            </Link>
+            <Link href="/how-we-work" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              How We Work
             </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Contact
