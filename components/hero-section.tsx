@@ -69,8 +69,8 @@ export function HeroSection() {
         >
           <source src="/nativeschema-hero.mp4" type="video/mp4" />
         </video>
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-background/70 dark:bg-background/80" />
+        {/* Overlay for text readability (dark theme only) */}
+        <div className="absolute inset-0 dark:bg-background/80" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
