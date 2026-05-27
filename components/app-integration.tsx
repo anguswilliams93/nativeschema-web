@@ -78,8 +78,8 @@ const destinations: AppIcon[] = [
     bgColor: 'bg-indigo-600/10 dark:bg-indigo-400/10',
   },
   {
-    name: 'Reporting',
-    icon: 'https://img.icons8.com/color/48/combo-chart.png',
+    name: 'Sheets',
+    icon: 'https://img.icons8.com/color/48/google-sheets.png',
     bgColor: 'bg-emerald-600/10 dark:bg-emerald-400/10',
   },
 ]
