@@ -50,7 +50,7 @@ const sources: AppIcon[] = [
   },
   {
     name: 'Xero',
-    icon: 'https://img.icons8.com/color/48/xero.png',
+    icon: 'https://upload.wikimedia.org/wikipedia/en/9/9f/Xero_software_logo.svg',
     bgColor: 'bg-cyan-600/10 dark:bg-cyan-400/10',
   },
 ]
