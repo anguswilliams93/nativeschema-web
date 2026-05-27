@@ -1,17 +1,18 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
-import crypto from 'node:crypto'
 
-// Booking creates a real Google Calendar event. It relies on a Google service
-// account. Set these environment variables in production:
-//   GOOGLE_CLIENT_EMAIL        service account email
-//   GOOGLE_PRIVATE_KEY         service account private key (newlines as \n)
-//   GOOGLE_IMPERSONATED_USER   Workspace user to act as (required to invite
-//                              attendees; needs domain-wide delegation)
-//   GOOGLE_CALENDAR_ID         calendar to write to (defaults to the user above)
-//   BOOKING_TIMEZONE           IANA timezone, e.g. Australia/Brisbane
-// If the Google variables are absent the booking still succeeds and the team is
-// emailed, but no calendar event is created.
+// Booking creates a real Outlook (Microsoft 365) calendar event via Microsoft
+// Graph, using the OAuth2 client-credentials flow. Set these environment
+// variables in production:
+//   MS_TENANT_ID       Azure AD / Entra tenant ID
+//   MS_CLIENT_ID       App registration (client) ID
+//   MS_CLIENT_SECRET   App registration client secret
+//   MS_CALENDAR_USER   UPN/mailbox whose calendar receives events
+//                      (e.g. angus@nativeschema.com or a shared bookings mailbox)
+//   BOOKING_TIMEZONE   IANA timezone, e.g. Australia/Brisbane
+// The app registration needs the Calendars.ReadWrite *application* permission
+// with admin consent. If the MS_* variables are absent the booking still
+// succeeds and the team is emailed, but no calendar event is created.
 
 export const runtime = 'nodejs'
 
@@ -53,60 +54,38 @@ function addMinutes(time: string, minutes: number): string {
   return `${hh}:${mm}`
 }
 
-function base64url(input: string | Buffer): string {
-  return Buffer.from(input).toString('base64url')
-}
+// Exchange the app registration credentials for a Microsoft Graph access token.
+async function getGraphAccessToken(): Promise<string> {
+  const tenant = process.env.MS_TENANT_ID
+  const clientId = process.env.MS_CLIENT_ID
+  const clientSecret = process.env.MS_CLIENT_SECRET
 
-// Mint an OAuth access token for the service account via a signed JWT bearer.
-async function getGoogleAccessToken(): Promise<string> {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-  const subject = process.env.GOOGLE_IMPERSONATED_USER
-
-  if (!clientEmail || !privateKey) {
-    throw new Error('Google Calendar is not configured')
+  if (!tenant || !clientId || !clientSecret) {
+    throw new Error('Microsoft 365 calendar is not configured')
   }
 
-  const now = Math.floor(Date.now() / 1000)
-  const header = { alg: 'RS256', typ: 'JWT' }
-  const claim: Record<string, unknown> = {
-    iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/calendar.events',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  }
-  // Impersonation (domain-wide delegation) is required to invite attendees.
-  if (subject) claim.sub = subject
-
-  const unsigned = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(claim))}`
-  const signer = crypto.createSign('RSA-SHA256')
-  signer.update(unsigned)
-  signer.end()
-  const signature = signer.sign(privateKey).toString('base64url')
-  const assertion = `${unsigned}.${signature}`
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
+  const res = await fetch(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion,
+      client_id: clientId,
+      client_secret: clientSecret,
+      scope: 'https://graph.microsoft.com/.default',
+      grant_type: 'client_credentials',
     }),
   })
   const data = await res.json()
   if (!res.ok || !data.access_token) {
-    throw new Error(`Google token exchange failed: ${data.error_description || data.error || res.status}`)
+    throw new Error(`Microsoft token request failed: ${data.error_description || data.error || res.status}`)
   }
   return data.access_token as string
 }
 
 async function createCalendarEvent(booking: BookingData): Promise<string> {
-  const accessToken = await getGoogleAccessToken()
-  const calendarId =
-    process.env.GOOGLE_CALENDAR_ID || process.env.GOOGLE_IMPERSONATED_USER || 'primary'
-
+  const accessToken = await getGraphAccessToken()
+  const user = process.env.MS_CALENDAR_USER || BOOKING_RECIPIENT
   const endTime = addMinutes(booking.time, 30)
+
   const descriptionLines = [
     `Scoping call booked from the Native Schema website.`,
     ``,
@@ -120,22 +99,19 @@ async function createCalendarEvent(booking: BookingData): Promise<string> {
   ]
 
   const event = {
-    summary: `Scoping call: Native Schema x ${booking.name}${booking.service ? ` - ${booking.service}` : ''}`,
-    description: descriptionLines.join('\n'),
+    subject: `Scoping call: Native Schema x ${booking.name}${booking.service ? ` - ${booking.service}` : ''}`,
+    body: { contentType: 'Text', content: descriptionLines.join('\n') },
     start: { dateTime: `${booking.date}T${booking.time}:00`, timeZone: BOOKING_TIMEZONE },
     end: { dateTime: `${booking.date}T${endTime}:00`, timeZone: BOOKING_TIMEZONE },
-    attendees: [{ email: booking.email, displayName: booking.name }],
-    reminders: { useDefault: true },
-    conferenceData: {
-      createRequest: {
-        requestId: crypto.randomUUID(),
-        conferenceSolutionKey: { type: 'hangoutsMeet' },
-      },
-    },
+    attendees: [
+      { emailAddress: { address: booking.email, name: booking.name }, type: 'required' },
+    ],
+    isOnlineMeeting: true,
+    onlineMeetingProvider: 'teamsForBusiness',
   }
 
   const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all&conferenceDataVersion=1`,
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(user)}/events`,
     {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -146,7 +122,7 @@ async function createCalendarEvent(booking: BookingData): Promise<string> {
   if (!res.ok) {
     throw new Error(`Calendar event creation failed: ${data.error?.message || res.status}`)
   }
-  return data.htmlLink as string
+  return (data.webLink as string) || 'created'
 }
 
 export async function POST(request: Request) {
@@ -178,8 +154,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create the calendar event. If Google is not configured we still record the
-    // booking via email so nothing is lost.
+    // Create the calendar event. If Microsoft 365 is not configured we still
+    // record the booking via email so nothing is lost.
     let calendarLink: string | null = null
     let calendarError: string | null = null
     try {

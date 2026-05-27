@@ -32,23 +32,23 @@ Email and spam protection (already in use):
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key (public).
 - `TURNSTILE_SECRET_KEY` - Cloudflare Turnstile secret key.
 
-Booking calendar (Google Calendar integration in `app/api/booking`):
+Booking calendar (Outlook / Microsoft 365 via Microsoft Graph, in
+`app/api/booking`):
 
-- `GOOGLE_CLIENT_EMAIL` - service account email.
-- `GOOGLE_PRIVATE_KEY` - service account private key. Keep the literal `\n`
-  sequences; the code converts them to newlines.
-- `GOOGLE_IMPERSONATED_USER` - Workspace user the service account acts as.
-  Required to invite the client as an attendee, and the service account must
-  have domain-wide delegation for the `calendar.events` scope.
-- `GOOGLE_CALENDAR_ID` - calendar to write events to. Defaults to the
-  impersonated user, or `primary`.
+- `MS_TENANT_ID` - Azure AD / Entra tenant ID.
+- `MS_CLIENT_ID` - app registration (client) ID.
+- `MS_CLIENT_SECRET` - app registration client secret.
+- `MS_CALENDAR_USER` - the UPN/mailbox whose calendar receives bookings, for
+  example `angus@nativeschema.com` or a shared bookings mailbox.
 - `BOOKING_TIMEZONE` - IANA timezone for the slots, for example
   `Australia/Brisbane`. Defaults to `Australia/Brisbane`.
 - `BOOKING_RECIPIENT` - email address that receives booking notifications.
   Defaults to `angus@nativeschema.com`.
 
-If the Google variables are not set, a booking still records by emailing the
-team, but no calendar event is created automatically.
+The app registration needs the `Calendars.ReadWrite` *application* permission
+with admin consent. Bookings are created with a Teams online meeting link and
+the client is invited automatically. If the Microsoft variables are not set, a
+booking still records by emailing the team, but no calendar event is created.
 
 ## Learn More
 
