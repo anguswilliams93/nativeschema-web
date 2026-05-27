@@ -78,7 +78,7 @@ export function HeroSection() {
         <div className="text-center lg:text-left">
           <AnimatedSection direction="up" delay={0.1}>
             <div className="mb-10 flex justify-center lg:justify-start">
-              <LogoHorizontal className="h-10 md:h-12 w-auto max-w-full" />
+              <LogoHorizontal className="h-10 md:h-12 w-auto max-w-full text-white" />
             </div>
           </AnimatedSection>
 
@@ -87,17 +87,17 @@ export function HeroSection() {
             as="h1"
             text="Seamless integrations for smart business"
             delay={0.3}
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 text-foreground text-balance"
+            className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 text-white text-balance"
           />
 
           {/* Subheading - expanded explanation */}
           <AnimatedSection direction="up" delay={0.5}>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed mb-4">
+            <p className="text-lg md:text-xl text-white/90 max-w-xl mx-auto lg:mx-0 leading-relaxed mb-4">
               Native Schema connects the tools you already use, cleans up the
               messy data in between, and turns it into Power BI reports your
               whole team can trust.
             </p>
-            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed mb-8">
+            <p className="text-base md:text-lg text-white/90 max-w-xl mx-auto lg:mx-0 leading-relaxed mb-8">
               No more manual exports. No more mismatched spreadsheets. Just one
               reliable source of truth for revenue, profitability, and cash flow,
               so you can make decisions with confidence.
