@@ -11,7 +11,7 @@ type AppIcon = {
   bgColor: string
 }
 
-/** Systems that hold the raw data — these flow INTO Native Schema. */
+/** Systems that hold the raw data - these flow INTO Native Schema. */
 const sources: AppIcon[] = [
   {
     name: 'ActionStep',
@@ -33,15 +33,6 @@ const sources: AppIcon[] = [
     icon: 'https://img.icons8.com/color/48/salesforce.png',
     bgColor: 'bg-sky-600/10 dark:bg-sky-400/10',
   },
-]
-
-/** Where the unified, processed data flows OUT to. */
-const destinations: AppIcon[] = [
-  {
-    name: 'Power BI',
-    icon: 'https://img.icons8.com/color/48/power-bi.png',
-    bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
-  },
   {
     name: 'Microsoft',
     icon: 'https://img.icons8.com/color/48/microsoft.png',
@@ -57,23 +48,72 @@ const destinations: AppIcon[] = [
     icon: 'https://img.icons8.com/color/48/amazon-web-services.png',
     bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
   },
+  {
+    name: 'Xero',
+    icon: 'https://img.icons8.com/color/48/xero.png',
+    bgColor: 'bg-cyan-600/10 dark:bg-cyan-400/10',
+  },
+]
+
+/** Where the unified, processed data flows OUT to. */
+const destinations: AppIcon[] = [
+  {
+    name: 'Power BI',
+    icon: 'https://img.icons8.com/color/48/power-bi.png',
+    bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
+  },
+  {
+    name: 'AI Agents',
+    icon: 'https://img.icons8.com/color/48/artificial-intelligence.png',
+    bgColor: 'bg-purple-600/10 dark:bg-purple-400/10',
+  },
+  {
+    name: 'Slack',
+    icon: 'https://img.icons8.com/color/48/slack-new.png',
+    bgColor: 'bg-fuchsia-600/10 dark:bg-fuchsia-400/10',
+  },
+  {
+    name: 'Teams',
+    icon: 'https://img.icons8.com/color/48/microsoft-teams-2019.png',
+    bgColor: 'bg-indigo-600/10 dark:bg-indigo-400/10',
+  },
+  {
+    name: 'Reporting',
+    icon: 'https://img.icons8.com/color/48/combo-chart.png',
+    bgColor: 'bg-emerald-600/10 dark:bg-emerald-400/10',
+  },
 ]
 
 // ---- Diagram geometry (SVG user units) ----
+// Heights are derived from the larger column so the layout adapts to any
+// number of nodes on each side.
 const VB_W = 920
-const VB_H = 460
-const HUB = { x: 460, y: 230 }
+const PITCH = 80
+const TOP_PAD = 60
+const BOTTOM_PAD = 56
+const maxCount = Math.max(sources.length, destinations.length)
+const VB_H = TOP_PAD + (maxCount - 1) * PITCH + BOTTOM_PAD
+const HUB = { x: VB_W / 2, y: VB_H / 2 }
 const SRC_X = 110
-const DST_X = 810
-const NODE_Y = [70, 185, 295, 410]
-const IN_END_X = 396 // incoming lines funnel to here (just left of hub)
-const OUT_START_X = 524 // outgoing lines emanate from here (just right of hub)
+const DST_X = VB_W - 110
+const IN_END_X = HUB.x - 64 // incoming lines funnel to here (just left of hub)
+const OUT_START_X = HUB.x + 64 // outgoing lines emanate from here (just right of hub)
+
+// Evenly space a column of nodes centred on the hub.
+function columnYs(count: number): number[] {
+  const start = HUB.y - ((count - 1) * PITCH) / 2
+  return Array.from({ length: count }, (_, i) => start + i * PITCH)
+}
+const sourceYs = columnYs(sources.length)
+const destYs = columnYs(destinations.length)
+const srcLabelY = sourceYs[0] - 40
+const dstLabelY = destYs[0] - 40
 
 const inPath = (y: number) =>
-  `M ${SRC_X + 34} ${y} C ${SRC_X + 170} ${y}, 300 ${HUB.y}, ${IN_END_X} ${HUB.y}`
+  `M ${SRC_X + 34} ${y} C ${SRC_X + 170} ${y}, ${HUB.x - 160} ${HUB.y}, ${IN_END_X} ${HUB.y}`
 
 const outPath = (y: number) =>
-  `M ${OUT_START_X} ${HUB.y} C 620 ${HUB.y}, ${DST_X - 170} ${y}, ${DST_X - 34} ${y}`
+  `M ${OUT_START_X} ${HUB.y} C ${HUB.x + 160} ${HUB.y}, ${DST_X - 170} ${y}, ${DST_X - 34} ${y}`
 
 // ---- Motion variants ----
 const parent = {
@@ -156,7 +196,7 @@ export function AppIntegration() {
         {/* Column labels */}
         <text
           x={SRC_X}
-          y={28}
+          y={srcLabelY}
           textAnchor="middle"
           className="fill-primary"
           style={{ fontSize: 14, letterSpacing: 3, fontFamily: 'var(--font-mono)' }}
@@ -165,7 +205,7 @@ export function AppIntegration() {
         </text>
         <text
           x={DST_X}
-          y={28}
+          y={dstLabelY}
           textAnchor="middle"
           className="fill-[var(--neon)]"
           style={{ fontSize: 14, letterSpacing: 3, fontFamily: 'var(--font-mono)' }}
@@ -174,7 +214,7 @@ export function AppIntegration() {
         </text>
 
         {/* ---- INCOMING wires (magenta) ---- */}
-        {NODE_Y.map((y, i) => (
+        {sourceYs.map((y, i) => (
           <g key={`in-wire-${i}`}>
             <motion.path
               id={`in-${i}`}
@@ -187,7 +227,7 @@ export function AppIntegration() {
             <circle r={3.5} className="fill-primary" filter="url(#flowGlow)">
               <animateMotion
                 dur="2.4s"
-                begin={`${1.1 + i * 0.35}s`}
+                begin={`${1.1 + i * 0.3}s`}
                 repeatCount="indefinite"
                 rotate="auto"
                 keyPoints="0;1"
@@ -201,7 +241,7 @@ export function AppIntegration() {
         ))}
 
         {/* ---- OUTGOING wires (neon green) ---- */}
-        {NODE_Y.map((y, i) => (
+        {destYs.map((y, i) => (
           <g key={`out-wire-${i}`}>
             <motion.path
               id={`out-${i}`}
@@ -216,7 +256,7 @@ export function AppIntegration() {
             <circle r={4} className="fill-[var(--neon)]" filter="url(#flowGlow)">
               <animateMotion
                 dur="2.4s"
-                begin={`${1.4 + i * 0.35}s`}
+                begin={`${1.4 + i * 0.3}s`}
                 repeatCount="indefinite"
                 rotate="auto"
                 keyPoints="0;1"
@@ -253,10 +293,10 @@ export function AppIntegration() {
 
         {/* ---- Nodes ---- */}
         {sources.map((app, i) => (
-          <Node key={app.name} app={app} x={SRC_X} y={NODE_Y[i]} />
+          <Node key={app.name} app={app} x={SRC_X} y={sourceYs[i]} />
         ))}
         {destinations.map((app, i) => (
-          <Node key={app.name} app={app} x={DST_X} y={NODE_Y[i]} />
+          <Node key={app.name} app={app} x={DST_X} y={destYs[i]} />
         ))}
       </motion.svg>
     </div>
