@@ -1,7 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY
 
 interface ContactFormData {
@@ -74,6 +73,7 @@ export async function POST(request: Request) {
 
     // Send email via Resend
     console.log('Sending email via Resend...')
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { data, error } = await resend.emails.send({
       from: 'contact@noreply.nativeschema.com',
       to: 'angus@nativeschema.com',

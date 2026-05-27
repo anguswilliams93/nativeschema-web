@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { AnimatedSection } from '@/components/animated-section'
 import { TextReveal } from '@/components/text-reveal'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LogoHorizontal } from '@/components/logo'
+import { AppIntegration } from '@/components/app-integration'
+import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
   const [videoLoaded, setVideoLoaded] = useState(false)
@@ -47,7 +50,7 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center px-4 py-24 overflow-hidden">
       {/* Theme toggle - top right corner */}
       <div className="absolute top-6 right-6 z-20">
         <ThemeToggle />
@@ -67,31 +70,61 @@ export function HeroSection() {
           <source src="/nativeschema-hero.mp4" type="video/mp4" />
         </video>
         {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-background/60 dark:bg-background/70" />
+        <div className="absolute inset-0 bg-background/70 dark:bg-background/80" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        {/* Logo */}
-        <AnimatedSection direction="up" delay={0.1}>
-          <div className="mb-16 flex justify-center">
-            <LogoHorizontal className="h-12 md:h-14 lg:h-16 w-auto max-w-full px-4" />
+      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {/* Left: headline, copy, calls to action */}
+        <div className="text-center lg:text-left">
+          <AnimatedSection direction="up" delay={0.1}>
+            <div className="mb-10 flex justify-center lg:justify-start">
+              <LogoHorizontal className="h-10 md:h-12 w-auto max-w-full" />
+            </div>
+          </AnimatedSection>
+
+          {/* Main headline - the tagline */}
+          <TextReveal
+            as="h1"
+            text="Seamless integrations for smart business"
+            delay={0.3}
+            className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 text-foreground text-balance"
+          />
+
+          {/* Subheading - expanded explanation */}
+          <AnimatedSection direction="up" delay={0.5}>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed mb-4">
+              Native Schema connects the tools you already use, cleans up the
+              messy data in between, and turns it into Power BI reports your
+              whole team can trust.
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed mb-8">
+              No more manual exports. No more mismatched spreadsheets. Just one
+              reliable source of truth for revenue, profitability, and cash flow,
+              so you can make decisions with confidence.
+            </p>
+          </AnimatedSection>
+
+          {/* Calls to action */}
+          <AnimatedSection direction="up" delay={0.7}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button size="lg" className="h-12 text-base font-semibold" asChild>
+                <Link href="/contact">Get my Power BI reports</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 text-base font-semibold" asChild>
+                <Link href="/contact#book">Book a 30-minute scope</Link>
+              </Button>
+            </div>
+          </AnimatedSection>
+        </div>
+
+        {/* Right: seamless integration diagram */}
+        <AnimatedSection direction="left" delay={0.6}>
+          <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-4 md:p-6 shadow-xl">
+            <p className="text-eyebrow mb-4 text-center">
+              How the data flows
+            </p>
+            <AppIntegration />
           </div>
-        </AnimatedSection>
-
-        {/* Main headline — masked word-rise reveal */}
-        <TextReveal
-          as="h1"
-          text="Smart systems for service businesses"
-          delay={0.3}
-          className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 text-foreground text-balance"
-        />
-
-        {/* Subheading */}
-        <AnimatedSection direction="up" delay={0.5}>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            We build custom software, integrations, and analytics solutions
-            that help you work smarter and scale faster.
-          </p>
         </AnimatedSection>
       </div>
     </section>

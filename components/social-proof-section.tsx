@@ -130,7 +130,7 @@ export function SocialProofSection() {
   )
 
   return (
-    <section id="testimonials" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
+    <section id="testimonials" className="flex items-center py-24 bg-background border-t border-border/40 overflow-hidden">
       <div className="w-full">
         <AnimatedSection direction="up">
           <div className="text-center mb-12 px-4">

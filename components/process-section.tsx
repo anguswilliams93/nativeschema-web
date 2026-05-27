@@ -126,7 +126,7 @@ function ProcessCard({ step }: { step: Step }) {
   )
 }
 
-export function ProcessSection() {
+export function ProcessSection({ showHeader = true }: { showHeader?: boolean }) {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const [count, setCount] = useState(0)
@@ -154,30 +154,32 @@ export function ProcessSection() {
   )
 
   return (
-    <section id="process" className="min-h-screen flex items-center py-24 bg-background overflow-hidden">
+    <section id="process" className="py-24 bg-background overflow-hidden">
       <div className="w-full">
-        <AnimatedSection direction="up">
-          <div className="text-center mb-12 px-4">
-            <EditableText
-              storageKey="process-label"
-              defaultValue="OUR APPROACH"
-              as="p"
-              className="text-eyebrow mb-4"
-            />
-            <EditableText
-              storageKey="process-title"
-              defaultValue="How We Work"
-              as="h2"
-              className="text-3xl md:text-4xl font-semibold mb-4"
-            />
-            <EditableText
-              storageKey="process-description"
-              defaultValue="A structured, transparent process that delivers results. We believe in collaboration, iteration, and precision."
-              as="p"
-              className="text-muted-foreground max-w-2xl mx-auto"
-            />
-          </div>
-        </AnimatedSection>
+        {showHeader && (
+          <AnimatedSection direction="up">
+            <div className="text-center mb-12 px-4">
+              <EditableText
+                storageKey="process-label"
+                defaultValue="OUR APPROACH"
+                as="p"
+                className="text-eyebrow mb-4"
+              />
+              <EditableText
+                storageKey="process-title"
+                defaultValue="How We Work"
+                as="h2"
+                className="text-3xl md:text-4xl font-semibold mb-4"
+              />
+              <EditableText
+                storageKey="process-description"
+                defaultValue="A structured, transparent process that delivers results. We believe in collaboration, iteration, and precision."
+                as="p"
+                className="text-muted-foreground max-w-2xl mx-auto"
+              />
+            </div>
+          </AnimatedSection>
+        )}
 
         <AnimatedSection direction="up" delay={0.2}>
           <div className="relative max-w-3xl mx-auto px-4">

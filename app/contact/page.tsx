@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { AnimatedSection } from '@/components/animated-section'
 import { LogoHorizontal } from '@/components/logo'
+import { BookingCalendar } from '@/components/booking-calendar'
 
 const socialLinks = [
   { name: 'Instagram', href: 'https://instagram.com/nativeschema' },
@@ -190,17 +191,57 @@ export default function ContactPage() {
                 </span>
               </h1>
               <p className="text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl">
-                Ready to transform your operations? We&apos;d love to hear about your project
-                and discuss how we can help.
+                Ready to transform your operations? Book a free 30-minute scoping
+                call below and we will create the meeting in your calendar
+                automatically. Prefer to write? Send us a message instead and we
+                will reply within one business day.
               </p>
             </div>
           </AnimatedSection>
         </div>
       </section>
 
+      {/* Booking Section - books a 30-minute call and auto-creates a calendar event */}
+      <section id="book" className="py-24 px-4 bg-background border-t border-border/40 scroll-mt-24">
+        <div className="max-w-3xl mx-auto">
+          <AnimatedSection direction="up">
+            <div className="text-center mb-10">
+              <span className="text-eyebrow mb-4 block">
+                BOOK A SCOPE
+              </span>
+              <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                Grab a 30-Minute Scoping Call
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                Choose a day and time that works for you. As soon as you confirm,
+                we create a 30-minute meeting in our calendar and send you an
+                invite with a video link. No back-and-forth emails, no waiting.
+              </p>
+            </div>
+          </AnimatedSection>
+          <AnimatedSection direction="up" delay={0.15}>
+            <BookingCalendar />
+          </AnimatedSection>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section className="py-24 px-4 bg-muted/30">
+      <section className="py-24 px-4 bg-muted/30 border-t border-border/40">
         <div className="max-w-6xl mx-auto">
+          <AnimatedSection direction="up">
+            <div className="text-center mb-12">
+              <span className="text-eyebrow mb-4 block">
+                OR SEND A MESSAGE
+              </span>
+              <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                Prefer to Write First?
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                Tell us a little about your project and we will get back to you
+                with the right next step.
+              </p>
+            </div>
+          </AnimatedSection>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
             {/* Contact Form */}
             <AnimatedSection direction="left" delay={0.2} className="lg:col-span-3">
@@ -387,7 +428,7 @@ export default function ContactPage() {
       <footer className="py-8 px-4 border-t border-border/50">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Native Schema. All rights reserved.
+            (c) {new Date().getFullYear()} Native Schema. All rights reserved.
           </p>
           <nav className="flex gap-6">
             <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -398,6 +439,9 @@ export default function ContactPage() {
             </Link>
             <Link href="/industries" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Industries
+            </Link>
+            <Link href="/how-we-work" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              How We Work
             </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Contact
