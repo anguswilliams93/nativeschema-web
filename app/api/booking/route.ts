@@ -23,6 +23,7 @@ interface BookingData {
   name: string
   email: string
   company?: string
+  service?: string
   notes?: string
   date: string // YYYY-MM-DD
   time: string // HH:mm
@@ -112,13 +113,14 @@ async function createCalendarEvent(booking: BookingData): Promise<string> {
     `Name: ${booking.name}`,
     `Email: ${booking.email}`,
     `Company: ${booking.company || 'Not provided'}`,
+    `Type of work: ${booking.service || 'Not specified'}`,
     ``,
     `What they want to cover:`,
     booking.notes || 'Not provided',
   ]
 
   const event = {
-    summary: `Scoping call: Native Schema x ${booking.name}`,
+    summary: `Scoping call: Native Schema x ${booking.name}${booking.service ? ` - ${booking.service}` : ''}`,
     description: descriptionLines.join('\n'),
     start: { dateTime: `${booking.date}T${booking.time}:00`, timeZone: BOOKING_TIMEZONE },
     end: { dateTime: `${booking.date}T${endTime}:00`, timeZone: BOOKING_TIMEZONE },
@@ -150,7 +152,7 @@ async function createCalendarEvent(booking: BookingData): Promise<string> {
 export async function POST(request: Request) {
   try {
     const body: BookingData = await request.json()
-    const { name, email, company, notes, date, time, turnstileToken } = body
+    const { name, email, company, service, notes, date, time, turnstileToken } = body
 
     if (!name || !email || !date || !time) {
       return NextResponse.json({ error: 'Name, email, date and time are required' }, { status: 400 })
@@ -201,6 +203,7 @@ export async function POST(request: Request) {
           `Name: ${name}`,
           `Email: ${email}`,
           `Company: ${company || 'Not provided'}`,
+          `Type of work: ${service || 'Not specified'}`,
           `When: ${date} at ${time} (${BOOKING_TIMEZONE})`,
           `Notes: ${notes || 'Not provided'}`,
           ``,

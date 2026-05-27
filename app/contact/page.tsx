@@ -56,6 +56,7 @@ export default function ContactPage() {
     message: '',
   })
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [booked, setBooked] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -204,28 +205,31 @@ export default function ContactPage() {
       {/* Booking Section - books a 30-minute call and auto-creates a calendar event */}
       <section id="book" className="py-24 px-4 bg-background border-t border-border/40 scroll-mt-24">
         <div className="max-w-3xl mx-auto">
-          <AnimatedSection direction="up">
-            <div className="text-center mb-10">
-              <span className="text-eyebrow mb-4 block">
-                BOOK A SCOPE
-              </span>
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">
-                Grab a 30-Minute Scoping Call
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                Choose a day and time that works for you. As soon as you confirm,
-                we create a 30-minute meeting in our calendar and send you an
-                invite with a video link. No back-and-forth emails, no waiting.
-              </p>
-            </div>
-          </AnimatedSection>
+          {!booked && (
+            <AnimatedSection direction="up">
+              <div className="text-center mb-10">
+                <span className="text-eyebrow mb-4 block">
+                  BOOK A SCOPE
+                </span>
+                <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                  Grab a 30-Minute Scoping Call
+                </h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                  Choose a day and time that works for you. As soon as you confirm,
+                  we create a 30-minute meeting in our calendar and send you an
+                  invite with a video link. No back-and-forth emails, no waiting.
+                </p>
+              </div>
+            </AnimatedSection>
+          )}
           <AnimatedSection direction="up" delay={0.15}>
-            <BookingCalendar />
+            <BookingCalendar onBookedChange={setBooked} />
           </AnimatedSection>
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact Section - hidden once an appointment is created */}
+      {!booked && (
       <section className="py-24 px-4 bg-muted/30 border-t border-border/40">
         <div className="max-w-6xl mx-auto">
           <AnimatedSection direction="up">
@@ -423,6 +427,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border/50">

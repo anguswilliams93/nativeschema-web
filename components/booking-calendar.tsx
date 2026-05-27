@@ -1,11 +1,33 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
-import { CalendarCheck, Clock, Video } from 'lucide-react'
+import {
+  CalendarCheck,
+  Clock,
+  Video,
+  ChevronDown,
+  CalendarPlus,
+  BarChart3,
+  Briefcase,
+  Code,
+  Link2,
+  ArrowRightLeft,
+  Globe,
+  HelpCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
@@ -15,8 +37,19 @@ const TIME_SLOTS = [
   '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
 ]
 
-// Display label only. The authoritative timezone lives in BOOKING_TIMEZONE on the server.
+// Display label and IANA zone. Keep in step with BOOKING_TIMEZONE on the server.
 const TIMEZONE_LABEL = 'Australian Eastern Standard Time (Brisbane)'
+const BOOKING_TZID = 'Australia/Brisbane'
+
+const services = [
+  { value: 'Power BI Consulting & Dashboards', icon: BarChart3 },
+  { value: 'Actionstep Workflow Design', icon: Briefcase },
+  { value: 'Custom Software Development', icon: Code },
+  { value: 'System Integrations', icon: Link2 },
+  { value: 'Migration Services', icon: ArrowRightLeft },
+  { value: 'Website Design & Hosting', icon: Globe },
+  { value: 'Other / Not Sure', icon: HelpCircle },
+]
 
 interface DayOption {
   value: string // YYYY-MM-DD
@@ -57,21 +90,153 @@ function to12Hour(time: string): string {
   return `${hour12}:${m} ${period}`
 }
 
-export function BookingCalendar() {
+function addMinutes(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  const hh = String(Math.floor(total / 60)).padStart(2, '0')
+  const mm = String(total % 60).padStart(2, '0')
+  return `${hh}:${mm}`
+}
+
+// ---- ICS generation (client-side "Add to calendar") ----
+function icsEscape(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n')
+}
+
+function localStamp(date: string, time: string): string {
+  return `${date.replace(/-/g, '')}T${time.replace(':', '')}00`
+}
+
+function utcStamp(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getUTCFullYear()}${p(d.getUTCMonth() + 1)}${p(d.getUTCDate())}T${p(d.getUTCHours())}${p(d.getUTCMinutes())}${p(d.getUTCSeconds())}Z`
+}
+
+function buildIcs(opts: { date: string; startTime: string; endTime: string; summary: string; description: string }): string {
+  const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@nativeschema.com`
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Native Schema//Booking//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VTIMEZONE',
+    `TZID:${BOOKING_TZID}`,
+    'BEGIN:STANDARD',
+    'DTSTART:19700101T000000',
+    'TZOFFSETFROM:+1000',
+    'TZOFFSETTO:+1000',
+    'TZNAME:AEST',
+    'END:STANDARD',
+    'END:VTIMEZONE',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${utcStamp(new Date())}`,
+    `DTSTART;TZID=${BOOKING_TZID}:${localStamp(opts.date, opts.startTime)}`,
+    `DTEND;TZID=${BOOKING_TZID}:${localStamp(opts.date, opts.endTime)}`,
+    `SUMMARY:${icsEscape(opts.summary)}`,
+    `DESCRIPTION:${icsEscape(opts.description)}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+}
+
+function downloadIcs(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+interface ConfirmedBooking {
+  label: string
+  date: string
+  startTime: string
+  endTime: string
+  summary: string
+  description: string
+  calendarCreated: boolean
+}
+
+export function BookingCalendar({ onBookedChange }: { onBookedChange?: (booked: boolean) => void }) {
   const days = useMemo(() => buildUpcomingWeekdays(10), [])
 
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedTime, setSelectedTime] = useState<string>('')
+  const [service, setService] = useState<string>('')
   const [form, setForm] = useState({ name: '', email: '', company: '', notes: '' })
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
-  const [confirmedFor, setConfirmedFor] = useState('')
+  const [confirmed, setConfirmed] = useState<ConfirmedBooking | null>(null)
+
+  // Typewriter auto-generation of the description, matching the contact form.
+  const [isTyping, setIsTyping] = useState(false)
+  const [targetMessage, setTargetMessage] = useState('')
+  const typewriterRef = useRef<NodeJS.Timeout | null>(null)
 
   const selectedDay = days.find((d) => d.value === selectedDate)
 
+  useEffect(() => {
+    if (!targetMessage || !isTyping) return
+
+    let currentIndex = 0
+    setForm((prev) => ({ ...prev, notes: '' }))
+
+    const typeNextChar = () => {
+      if (currentIndex < targetMessage.length) {
+        setForm((prev) => ({ ...prev, notes: targetMessage.slice(0, currentIndex + 1) }))
+        currentIndex++
+        typewriterRef.current = setTimeout(typeNextChar, 15)
+      } else {
+        setIsTyping(false)
+        setTargetMessage('')
+      }
+    }
+
+    typewriterRef.current = setTimeout(typeNextChar, 100)
+
+    return () => {
+      if (typewriterRef.current) clearTimeout(typewriterRef.current)
+    }
+  }, [targetMessage, isTyping])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }))
+  }
+
+  const handleServiceChange = (value: string) => {
+    setService(value)
+
+    if (typewriterRef.current) clearTimeout(typewriterRef.current)
+
+    setForm((prev) => {
+      const shouldAutoFill =
+        !prev.notes || prev.notes.startsWith('Hi,') || prev.notes.startsWith('Hi\n') || isTyping
+
+      if (shouldAutoFill && value && value !== 'Other / Not Sure') {
+        const greeting = prev.name ? `Hi, I'm ${prev.name}` : 'Hi'
+        const companyPart = prev.company ? ` from ${prev.company}` : ''
+        const emailPart = prev.email ? `\n\nYou can reach me at ${prev.email}.` : ''
+        const newMessage = `${greeting}${companyPart}.\n\nI'd like to use this 30-minute call to scope out your ${value} service and how you can help.${emailPart}\n\nLooking forward to speaking with you!`
+        setTargetMessage(newMessage)
+        setIsTyping(true)
+      }
+      return prev
+    })
+  }
+
+  const setBooked = (value: boolean) => {
+    onBookedChange?.(value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +250,9 @@ export function BookingCalendar() {
     if (!emailRegex.test(form.email)) {
       setStatus('error'); setErrorMessage('Please enter a valid email address'); return
     }
+    if (!service) {
+      setStatus('error'); setErrorMessage('Please choose the type of work'); return
+    }
     if (!selectedDate || !selectedTime) {
       setStatus('error'); setErrorMessage('Please choose a day and a time slot'); return
     }
@@ -97,7 +265,7 @@ export function BookingCalendar() {
       const response = await fetch('/api/booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, date: selectedDate, time: selectedTime, turnstileToken }),
+        body: JSON.stringify({ ...form, service, date: selectedDate, time: selectedTime, turnstileToken }),
       })
       const data = await response.json()
       if (!response.ok) {
@@ -107,9 +275,21 @@ export function BookingCalendar() {
       const label = selectedDay
         ? `${selectedDay.weekday} ${selectedDay.day} ${selectedDay.month} at ${to12Hour(selectedTime)}`
         : `${selectedDate} at ${to12Hour(selectedTime)}`
-      setConfirmedFor(label)
+      const description = `Type of work: ${service}\n\n${form.notes || 'No additional notes provided.'}`
+
+      setConfirmed({
+        label,
+        date: selectedDate,
+        startTime: selectedTime,
+        endTime: addMinutes(selectedTime, 30),
+        summary: `Scoping call: Native Schema x ${form.name}`,
+        description,
+        calendarCreated: Boolean(data.calendar),
+      })
       setStatus('success')
+      setBooked(true)
       setForm({ name: '', email: '', company: '', notes: '' })
+      setService('')
       setSelectedDate('')
       setSelectedTime('')
       setTurnstileToken(null)
@@ -119,23 +299,48 @@ export function BookingCalendar() {
     }
   }
 
-  if (status === 'success') {
+  const handleBookAnother = () => {
+    setConfirmed(null)
+    setStatus('idle')
+    setBooked(false)
+  }
+
+  const handleAddToCalendar = () => {
+    if (!confirmed) return
+    const ics = buildIcs({
+      date: confirmed.date,
+      startTime: confirmed.startTime,
+      endTime: confirmed.endTime,
+      summary: confirmed.summary,
+      description: confirmed.description,
+    })
+    downloadIcs('native-schema-scoping-call.ics', ics)
+  }
+
+  if (status === 'success' && confirmed) {
     return (
       <div className="bg-card border border-border/60 rounded-2xl p-8 md:p-10 shadow-xl text-center">
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
           <CalendarCheck className="h-7 w-7" />
         </div>
-        <h3 className="text-2xl font-semibold mb-3">Your call is booked</h3>
+        <h3 className="text-2xl font-semibold mb-3">Appointment created</h3>
         <p className="text-muted-foreground text-lg mb-2">
-          We have you down for {confirmedFor}.
+          You are booked in for {confirmed.label}.
         </p>
         <p className="text-muted-foreground">
-          A calendar invite with a video link is on its way to your inbox. If
-          anything changes, just reply to that invite and we will sort it out.
+          {confirmed.calendarCreated
+            ? 'A calendar invite with a video link is on its way to your inbox. You can also add it to your own calendar below.'
+            : 'We have your appointment and will be in touch to confirm. Add it to your own calendar below so you do not forget.'}
         </p>
-        <Button className="mt-8" variant="outline" onClick={() => setStatus('idle')}>
-          Book another time
-        </Button>
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Button onClick={handleAddToCalendar}>
+            <CalendarPlus className="h-4 w-4" />
+            Add to calendar
+          </Button>
+          <Button variant="outline" onClick={handleBookAnother}>
+            Book another time
+          </Button>
+        </div>
       </div>
     )
   }
@@ -231,14 +436,60 @@ export function BookingCalendar() {
           <Input id="email" type="email" placeholder="your@email.com" className="h-12" value={form.email} onChange={handleChange} required />
         </div>
         <Input id="company" placeholder="Company (optional)" className="h-12" value={form.company} onChange={handleChange} />
-        <Textarea
-          id="notes"
-          placeholder="What would you like to cover? (optional)"
-          rows={3}
-          className="resize-none"
-          value={form.notes}
-          onChange={handleChange}
-        />
+
+        {/* Type of work */}
+        <div className="space-y-2">
+          <span className="text-sm text-muted-foreground">Type of work</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full h-12 justify-between text-left font-normal">
+                {service ? (
+                  <span className="flex items-center gap-2">
+                    {(() => {
+                      const match = services.find((s) => s.value === service)
+                      if (match) {
+                        const Icon = match.icon
+                        return (<><Icon className="size-4 text-primary" />{match.value}</>)
+                      }
+                      return service
+                    })()}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Select the type of work...</span>
+                )}
+                <ChevronDown className="size-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
+              <DropdownMenuLabel>What do you need help with?</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={service} onValueChange={handleServiceChange}>
+                {services.map((s) => {
+                  const Icon = s.icon
+                  return (
+                    <DropdownMenuRadioItem key={s.value} value={s.value}>
+                      <Icon className="size-4 text-primary" />
+                      {s.value}
+                    </DropdownMenuRadioItem>
+                  )
+                })}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Auto-generated, editable description */}
+        <div className="space-y-2">
+          <span className="text-sm text-muted-foreground">What would you like to cover?</span>
+          <Textarea
+            id="notes"
+            placeholder="Pick a type of work above and we will draft this for you, or write your own."
+            rows={5}
+            className="resize-none"
+            value={form.notes}
+            onChange={handleChange}
+          />
+        </div>
       </div>
 
       <div className="flex justify-center">
