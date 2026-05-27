@@ -154,7 +154,7 @@ function Node({ app, x, y }: { app: AppIcon; x: number; y: number }) {
         x={x}
         y={y + 46}
         textAnchor="middle"
-        className="fill-muted-foreground"
+        className="fill-white"
         style={{ fontSize: 13, fontFamily: 'var(--font-sans)' }}
       >
         {app.name}
