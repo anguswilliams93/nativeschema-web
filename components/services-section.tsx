@@ -1,19 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel'
-import Autoplay from 'embla-carousel-autoplay'
 import { AnimatedSection } from '@/components/animated-section'
+import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
 import { EditableText } from '@/components/editable-text'
 import { useAdmin } from '@/components/admin-provider'
 
@@ -98,25 +92,6 @@ const defaultServices: Service[] = [
     simpleExplanation: "Sick of paying $200, $300, or more every month just to keep your website running? We build professional, fast websites using modern technology that costs a fraction of what traditional agencies charge for hosting. You get a great-looking site that actually converts visitors into clients - without the monthly hosting bill eating into your profits.",
   }
 ]
-
-function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
-  return (
-    <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: count }, (_, index) => (
-        <button
-          key={index}
-          className={`w-2 h-2 rounded-full transition-all duration-200 ${
-            current === index
-              ? 'bg-primary scale-125'
-              : 'bg-muted hover:bg-muted-foreground/50'
-          }`}
-          onClick={() => onSelect(index)}
-          aria-label={`Go to slide ${index + 1}`}
-        />
-      ))}
-    </div>
-  )
-}
 
 function ServiceDialog({ service, open, onOpenChange }: {
   service: Service
@@ -222,43 +197,46 @@ function EditServiceDialog({
 
 function ServiceCard({
   service,
+  index,
   isAdmin,
   onClick
 }: {
   service: Service
+  index: number
   isAdmin: boolean
   onClick: () => void
 }) {
   return (
     <Card
-      className={`neon-hover w-[90vw] max-w-lg duration-300 cursor-pointer select-none mx-auto ${isAdmin ? 'ring-2 ring-primary/20' : ''}`}
+      className={`neon-hover group relative flex h-full flex-col overflow-hidden border-2 duration-300 cursor-pointer select-none ${isAdmin ? 'ring-2 ring-primary/20' : ''}`}
       onClick={onClick}
     >
+      {/* Faint corner index — editorial detail */}
+      <span aria-hidden className="pointer-events-none absolute -top-3 right-3 font-mono text-6xl font-semibold text-primary/[0.06] transition-colors duration-300 group-hover:text-primary/10">
+        {String(index + 1).padStart(2, '0')}
+      </span>
       {isAdmin && (
         <div className="absolute top-2 right-2 bg-primary/10 text-primary text-xs px-2 py-1 rounded z-10">
           Click to edit
         </div>
       )}
-      <CardHeader>
-        <CardTitle className="text-xl">{service.title}</CardTitle>
+      <CardHeader className="relative">
+        <CardTitle className="text-xl leading-snug">{service.title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <CardDescription className="text-base mb-4">
+      <CardContent className="relative flex flex-1 flex-col">
+        <CardDescription className="text-base mb-5">
           {service.description}
         </CardDescription>
-        <ul className="space-y-1.5 text-sm text-muted-foreground">
-          {service.highlights.slice(0, 3).map((highlight, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span aria-hidden className="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          {service.highlights.map((highlight, i) => (
+            <li key={i} className="flex items-start gap-2.5">
+              <span aria-hidden className="mt-[7px] inline-block h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
               {highlight}
             </li>
           ))}
-          {service.highlights.length > 3 && (
-            <li className="text-primary text-xs">+{service.highlights.length - 3} more</li>
-          )}
         </ul>
-        <Button variant="ghost" size="sm" className="mt-4 text-primary p-0 h-auto transition-colors hover:text-neon hover:bg-transparent">
-          {isAdmin ? 'Edit service' : 'What does this mean?'}
+        <Button variant="ghost" size="sm" className="mt-6 self-start text-primary p-0 h-auto transition-colors hover:text-neon hover:bg-transparent">
+          {isAdmin ? 'Edit service →' : 'What does this mean? →'}
         </Button>
       </CardContent>
     </Card>
@@ -293,32 +271,6 @@ export function ServicesShowcase() {
     saveServices(newServices)
   }
 
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const [count, setCount] = useState(0)
-
-  const onSelect = useCallback(() => {
-    if (!api) return
-    setCurrent(api.selectedScrollSnap())
-  }, [api])
-
-  useEffect(() => {
-    if (!api) return
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap())
-    api.on('select', onSelect)
-    return () => {
-      api.off('select', onSelect)
-    }
-  }, [api, onSelect])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      api?.scrollTo(index)
-    },
-    [api]
-  )
-
   return (
     <div className="w-full">
         <AnimatedSection direction="up">
@@ -344,29 +296,20 @@ export function ServicesShowcase() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection direction="up" delay={0.2}>
-          <div className="relative max-w-2xl mx-auto px-4">
-            <Carousel
-              setApi={setApi}
-              opts={{ loop: true }}
-              plugins={[Autoplay({ delay: 6000, stopOnInteraction: false })]}
-              className="py-4"
-            >
-              <CarouselContent>
-                {services.map((service, index) => (
-                  <CarouselItem key={index}>
-                    <ServiceCard
-                      service={service}
-                      isAdmin={isAdmin}
-                      onClick={() => isAdmin ? setEditingIndex(index) : setSelectedService(service)}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-            <Pagination count={count} current={current} onSelect={scrollTo} />
-          </div>
-        </AnimatedSection>
+        <div className="mx-auto max-w-6xl px-4">
+          <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" staggerDelay={0.08}>
+            {services.map((service, index) => (
+              <StaggerItem key={index} className="h-full">
+                <ServiceCard
+                  service={service}
+                  index={index}
+                  isAdmin={isAdmin}
+                  onClick={() => isAdmin ? setEditingIndex(index) : setSelectedService(service)}
+                />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
 
         {selectedService && !isAdmin && (
           <ServiceDialog

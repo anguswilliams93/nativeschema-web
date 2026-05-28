@@ -11,12 +11,10 @@ import Navbar from '@/components/shadcn-studio/blocks/navbar-component-06/navbar
 
 const navItems = [
   { title: 'Home', href: '/' },
-  { title: 'Services', href: '#services' },
-  { title: 'Solutions', href: '#solutions' },
+  { title: 'Services', href: '/services' },
+  { title: 'Solutions', href: '/solutions' },
   { title: 'Industries', href: '/industries' },
   { title: 'How We Work', href: '/how-we-work' },
-  { title: 'Testimonials', href: '#testimonials' },
-  { title: 'Journal', href: '#journal' },
   { title: 'Contact', href: '/contact' },
 ]
 

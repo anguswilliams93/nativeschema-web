@@ -1,16 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRef, useState } from 'react'
+import { motion, useScroll, useMotionValueEvent, type MotionValue } from 'motion/react'
 import { AnimatedSection } from '@/components/animated-section'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel'
-import Autoplay from 'embla-carousel-autoplay'
 import { EditableText } from '@/components/editable-text'
+import { EASE_OUT } from '@/lib/motion'
 import {
   Search,
   ClipboardList,
@@ -19,7 +13,9 @@ import {
   CheckCircle2,
   Rocket,
   Headset,
-  type LucideIcon
+  Flag,
+  RefreshCw,
+  type LucideIcon,
 } from 'lucide-react'
 
 interface Step {
@@ -82,83 +78,102 @@ const steps: Step[] = [
   },
 ]
 
-function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
+/** Lights up once the scroll-progress line has travelled past this fraction. */
+function useReached(progress: MotionValue<number>, threshold: number) {
+  const [reached, setReached] = useState(false)
+  useMotionValueEvent(progress, 'change', (v) => {
+    if (v >= threshold && !reached) setReached(true)
+    else if (v < threshold && reached) setReached(false)
+  })
+  return reached
+}
+
+function StepRow({
+  step,
+  index,
+  total,
+  progress,
+}: {
+  step: Step
+  index: number
+  total: number
+  progress: MotionValue<number>
+}) {
+  const Icon = step.icon
+  const isLeft = index % 2 === 0
+  // Node sits roughly at the vertical centre of its row.
+  const reached = useReached(progress, (index + 0.5) / total)
+
   return (
-    <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: count }, (_, index) => (
-        <button
-          key={index}
-          className={`w-2 h-2 rounded-full transition-all duration-200 ${
-            current === index
-              ? 'bg-primary scale-125'
-              : 'bg-muted hover:bg-muted-foreground/50'
+    <div className="relative lg:grid lg:min-h-[8.5rem] lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-4">
+      {/* Milestone node — on the spine */}
+      <div className="absolute left-8 top-7 z-20 -translate-x-1/2 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2">
+        <div
+          className={`relative flex h-16 w-16 items-center justify-center rounded-full border-2 bg-background transition-all duration-500 ${
+            reached
+              ? 'border-neon shadow-[0_0_0_4px_color-mix(in_oklch,var(--neon)_12%,transparent),0_0_28px_-4px_var(--neon)]'
+              : 'border-border'
           }`}
-          onClick={() => onSelect(index)}
-          aria-label={`Go to slide ${index + 1}`}
-        />
-      ))}
+        >
+          <Icon
+            className={`h-6 w-6 transition-colors duration-500 ${reached ? 'text-neon' : 'text-muted-foreground'}`}
+            strokeWidth={1.75}
+          />
+          {/* Step number badge */}
+          <span
+            className={`absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border bg-card font-mono text-[10px] font-semibold transition-colors duration-500 ${
+              reached ? 'border-neon/40 text-neon' : 'border-border text-muted-foreground'
+            }`}
+          >
+            {step.number}
+          </span>
+        </div>
+      </div>
+
+      {/* Card — alternates sides on desktop, always right of the rail on mobile */}
+      <motion.div
+        initial={{ opacity: 0, x: isLeft ? -32 : 32, filter: 'blur(6px)' }}
+        whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.6, ease: EASE_OUT }}
+        className={`relative pb-12 pl-20 lg:pb-0 lg:pl-0 ${
+          isLeft ? 'lg:col-start-1 lg:pr-12 lg:text-right' : 'lg:col-start-2 lg:pl-12'
+        }`}
+      >
+        <div className="group neon-hover relative overflow-hidden rounded-xl border-2 border-border bg-card/60 p-6 backdrop-blur-sm sm:p-7">
+          {/* Ghost number watermark */}
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute -bottom-4 font-mono text-7xl font-bold leading-none text-neon/[0.06] ${
+              isLeft ? 'left-4 lg:left-auto lg:right-4' : 'left-4'
+            }`}
+          >
+            {step.number}
+          </span>
+          <span className={`text-eyebrow mb-2 block ${isLeft ? 'lg:text-right' : ''}`}>
+            {step.subtitle}
+          </span>
+          <h3 className="relative mb-3 text-xl font-semibold sm:text-2xl">{step.title}</h3>
+          <p className="relative leading-relaxed text-muted-foreground">{step.description}</p>
+        </div>
+      </motion.div>
     </div>
   )
 }
 
-function ProcessCard({ step }: { step: Step }) {
-  const Icon = step.icon
-  return (
-    <Card className="bg-card/50 backdrop-blur-sm border-border/50 w-[90vw] max-w-2xl h-auto flex flex-col select-none mx-auto">
-      <CardHeader className="text-center pb-4 pt-8 px-6 md:px-8 flex-shrink-0">
-        <div className="mb-3 flex justify-center">
-          <Icon className="w-12 h-12 text-primary" strokeWidth={1.5} />
-        </div>
-        <span className="text-eyebrow">
-          {step.subtitle}
-        </span>
-        <CardTitle className="text-xl md:text-2xl mt-2">
-          <span className="text-primary/40 mr-2">{step.number}</span>
-          {step.title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-6 md:px-8 pb-8">
-        <CardDescription className="text-base md:text-lg text-center leading-relaxed">
-          {step.description}
-        </CardDescription>
-      </CardContent>
-    </Card>
-  )
-}
-
 export function ProcessSection({ showHeader = true }: { showHeader?: boolean }) {
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const [count, setCount] = useState(0)
-
-  const onSelect = useCallback(() => {
-    if (!api) return
-    setCurrent(api.selectedScrollSnap())
-  }, [api])
-
-  useEffect(() => {
-    if (!api) return
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap())
-    api.on('select', onSelect)
-    return () => {
-      api.off('select', onSelect)
-    }
-  }, [api, onSelect])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      api?.scrollTo(index)
-    },
-    [api]
-  )
+  const trackRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: trackRef,
+    offset: ['start 0.85', 'end 0.6'],
+  })
 
   return (
-    <section id="process" className="py-24 bg-background overflow-hidden">
+    <section id="process" className="overflow-hidden bg-background py-24">
       <div className="w-full">
         {showHeader && (
           <AnimatedSection direction="up">
-            <div className="text-center mb-12 px-4">
+            <div className="mb-16 px-4 text-center">
               <EditableText
                 storageKey="process-label"
                 defaultValue="OUR APPROACH"
@@ -169,37 +184,61 @@ export function ProcessSection({ showHeader = true }: { showHeader?: boolean }) 
                 storageKey="process-title"
                 defaultValue="How We Work"
                 as="h2"
-                className="text-3xl md:text-4xl font-semibold mb-4"
+                className="mb-4 text-3xl font-semibold md:text-4xl"
               />
               <EditableText
                 storageKey="process-description"
                 defaultValue="A structured, transparent process that delivers results. We believe in collaboration, iteration, and precision."
                 as="p"
-                className="text-muted-foreground max-w-2xl mx-auto"
+                className="mx-auto max-w-2xl text-muted-foreground"
               />
             </div>
           </AnimatedSection>
         )}
 
-        <AnimatedSection direction="up" delay={0.2}>
-          <div className="relative max-w-3xl mx-auto px-4">
-            <Carousel
-              setApi={setApi}
-              opts={{ loop: true }}
-              plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
-              className="py-4"
-            >
-              <CarouselContent>
-                {steps.map((step, index) => (
-                  <CarouselItem key={index}>
-                    <ProcessCard step={step} />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-            <Pagination count={count} current={current} onSelect={scrollTo} />
+        <div ref={trackRef} className="relative mx-auto max-w-5xl px-4">
+          {/* ===== The spine ===== */}
+          {/* Static track */}
+          <div className="absolute bottom-0 left-8 top-0 w-0.5 -translate-x-1/2 bg-border/70 lg:left-1/2" />
+          {/* Scroll-driven gradient fill */}
+          <motion.div
+            style={{ scaleY: scrollYProgress }}
+            className="absolute bottom-0 left-8 top-0 w-0.5 origin-top -translate-x-1/2 bg-gradient-to-b from-neon via-neon to-primary shadow-[0_0_16px_-2px_var(--neon)] lg:left-1/2"
+          />
+
+          {/* ===== Kickoff marker ===== */}
+          <div className="relative flex items-center gap-4 pb-10 pl-20 lg:flex-col lg:items-center lg:gap-3 lg:pb-8 lg:pl-0">
+            <div className="absolute left-8 top-1 z-20 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border-2 border-neon bg-neon text-neutral-950 shadow-[0_0_24px_-4px_var(--neon)] lg:static lg:translate-x-0">
+              <Flag className="h-4 w-4" strokeWidth={2.25} />
+            </div>
+            <span className="font-mono text-xs uppercase tracking-[0.28em] text-neon">
+              Kickoff
+            </span>
           </div>
-        </AnimatedSection>
+
+          {/* ===== Steps ===== */}
+          <div className="lg:space-y-2">
+            {steps.map((step, index) => (
+              <StepRow
+                key={step.number}
+                step={step}
+                index={index}
+                total={steps.length}
+                progress={scrollYProgress}
+              />
+            ))}
+          </div>
+
+          {/* ===== Ongoing loop tail ===== */}
+          <div className="relative flex items-center gap-4 pl-20 pt-2 lg:flex-col lg:items-center lg:gap-3 lg:pl-0 lg:pt-8">
+            <div className="absolute left-8 top-1 z-20 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border-2 border-primary bg-card text-primary shadow-[0_0_24px_-6px_var(--primary)] lg:static lg:translate-x-0">
+              <RefreshCw className="h-4 w-4" strokeWidth={2.25} />
+            </div>
+            <span className="font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
+              Ongoing partnership
+            </span>
+          </div>
+        </div>
       </div>
     </section>
   )

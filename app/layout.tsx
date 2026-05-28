@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AdminProvider } from "@/components/admin-provider";
 import { AdminLogin } from "@/components/admin-login";
 import { StickyNav } from "@/components/sticky-nav";
-import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Native Schema | Building Smarter Systems",
-  description: "Technology company specializing in custom software, system integrations, and data-driven automation for service businesses. We build smart systems that empower businesses to work smarter and scale faster.",
-  keywords: ["custom software", "system integration", "automation", "data analytics", "business intelligence", "legal tech", "Brisbane", "Australia"],
+  title: "Native Schema | Powerful decisions, driven by data",
+  description: "Native Schema connects the tools you already use, cleans up the messy data in between, and turns it into Power BI reports your whole team can trust.",
+  keywords: ["custom software", "system integration", "automation", "data analytics", "business intelligence", "power bi", "legal tech", "brisbane", "australia"],
   authors: [{ name: "Native Schema" }],
   icons: {
     icon: "/favicon.svg",
@@ -30,8 +29,8 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   openGraph: {
-    title: "Native Schema | Building Smarter Systems",
-    description: "Technology company specializing in custom software, system integrations, and data-driven automation for service businesses.",
+    title: "Native Schema | Powerful decisions, driven by data",
+    description: "Native Schema connects the tools you already use, cleans up the messy data in between, and turns it into Power BI reports your whole team can trust.",
     type: "website",
     locale: "en_AU",
   },

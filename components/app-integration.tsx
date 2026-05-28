@@ -4,38 +4,42 @@ import { motion } from 'motion/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import NativeSchemaLogo from '@/components/native-schema-logo'
 import { EASE_OUT } from '@/lib/motion'
+import { Bot, ListChecks } from 'lucide-react'
 
 type AppIcon = {
   name: string
-  icon: string
+  icon?: string
+  label?: string
+  badge?: string
   bgColor: string
+  iconColor?: string
+  kind?: 'image' | 'bot' | 'tasks'
 }
 
-/** Systems that hold the raw data — these flow INTO Native Schema. */
 const sources: AppIcon[] = [
   {
-    name: 'ActionStep',
-    icon: 'https://avatars.githubusercontent.com/u/38897285?s=200&v=4',
-    bgColor: 'bg-emerald-600/10 dark:bg-emerald-400/10',
+    name: 'Microsoft',
+    icon: 'https://img.icons8.com/color/48/microsoft.png',
+    bgColor: 'bg-sky-600/10 dark:bg-sky-400/10',
   },
   {
-    name: 'LawMaster',
-    icon: 'https://www.lawmaster.com.au/favicon.ico',
+    name: 'Google',
+    icon: 'https://img.icons8.com/color/48/google-logo.png',
     bgColor: 'bg-blue-600/10 dark:bg-blue-400/10',
   },
   {
-    name: 'HubSpot',
-    icon: 'https://www.hubspot.com/hubfs/HubSpot_Logos/HubSpot-Inversed-Favicon.png',
-    bgColor: 'bg-orange-600/10 dark:bg-orange-400/10',
+    name: 'Xero',
+    icon: 'https://img.icons8.com/color/48/xero.png',
+    badge: 'NEW',
+    bgColor: 'bg-blue-600/10 dark:bg-blue-400/10',
   },
   {
-    name: 'Salesforce',
-    icon: 'https://img.icons8.com/color/48/salesforce.png',
-    bgColor: 'bg-sky-600/10 dark:bg-sky-400/10',
+    name: 'AWS',
+    icon: 'https://img.icons8.com/color/48/amazon-web-services.png',
+    bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
   },
 ]
 
-/** Where the unified, processed data flows OUT to. */
 const destinations: AppIcon[] = [
   {
     name: 'Power BI',
@@ -43,19 +47,23 @@ const destinations: AppIcon[] = [
     bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
   },
   {
-    name: 'Microsoft',
-    icon: 'https://img.icons8.com/color/48/microsoft.png',
-    bgColor: 'bg-sky-600/10 dark:bg-sky-400/10',
+    name: 'AI Agents',
+    label: 'AI',
+    bgColor: 'bg-purple-600/10 dark:bg-purple-400/10',
+    iconColor: 'text-purple-500',
+    kind: 'bot',
   },
   {
-    name: 'Google Cloud',
-    icon: 'https://img.icons8.com/color/48/google-cloud.png',
-    bgColor: 'bg-blue-600/10 dark:bg-blue-400/10',
+    name: 'Teams',
+    icon: 'https://img.icons8.com/color/48/microsoft-teams.png',
+    bgColor: 'bg-indigo-600/10 dark:bg-indigo-400/10',
   },
   {
-    name: 'AWS',
-    icon: 'https://img.icons8.com/color/48/amazon-web-services.png',
-    bgColor: 'bg-amber-600/10 dark:bg-amber-400/10',
+    name: 'Tasks',
+    label: 'To do',
+    bgColor: 'bg-emerald-600/10 dark:bg-emerald-400/10',
+    iconColor: 'text-emerald-500',
+    kind: 'tasks',
   },
 ]
 
@@ -66,8 +74,8 @@ const HUB = { x: 460, y: 230 }
 const SRC_X = 110
 const DST_X = 810
 const NODE_Y = [70, 185, 295, 410]
-const IN_END_X = 396 // incoming lines funnel to here (just left of hub)
-const OUT_START_X = 524 // outgoing lines emanate from here (just right of hub)
+const IN_END_X = 394
+const OUT_START_X = 526
 
 const inPath = (y: number) =>
   `M ${SRC_X + 34} ${y} C ${SRC_X + 170} ${y}, 300 ${HUB.y}, ${IN_END_X} ${HUB.y}`
@@ -99,25 +107,60 @@ const drawVariant = {
   },
 } as const
 
-function Node({ app, x, y }: { app: AppIcon; x: number; y: number }) {
+function AppGlyph({ app }: { app: AppIcon }) {
+  if (app.kind === 'bot') {
+    return <Bot className={`size-6 ${app.iconColor}`} strokeWidth={1.8} />
+  }
+
+  if (app.kind === 'tasks') {
+    return <ListChecks className={`size-6 ${app.iconColor}`} strokeWidth={1.8} />
+  }
+
+  return (
+    <>
+      {app.icon && <AvatarImage src={app.icon} alt={app.name} />}
+      <AvatarFallback className="text-[9px]">{app.label ?? app.name.slice(0, 2)}</AvatarFallback>
+    </>
+  )
+}
+
+function Node({ app, x, y, align }: { app: AppIcon; x: number; y: number; align: 'left' | 'right' }) {
+  const labelX = align === 'left' ? x + 42 : x - 42
+  const textAnchor = align === 'left' ? 'start' : 'end'
+
   return (
     <motion.g variants={nodeVariant} style={{ transformBox: 'fill-box', transformOrigin: 'center' }}>
       <foreignObject x={x - 30} y={y - 30} width={60} height={60} className="overflow-visible">
         <div className="flex size-full items-center justify-center">
           <Avatar className={`${app.bgColor} border-background size-12 border-2 p-2.5 shadow-sm`}>
-            <AvatarImage src={app.icon} alt={app.name} />
-            <AvatarFallback className="text-[9px]">{app.name.slice(0, 2)}</AvatarFallback>
+            <AppGlyph app={app} />
           </Avatar>
         </div>
       </foreignObject>
+      {app.badge && (
+        <foreignObject x={x + 8} y={y - 36} width={48} height={20} className="overflow-visible">
+          <div className="rounded-full border border-[var(--neon)] bg-card px-2 py-0.5 text-[9px] font-semibold text-[var(--neon)] shadow-[0_0_14px_-7px_var(--neon)]">
+            {app.badge}
+          </div>
+        </foreignObject>
+      )}
       <text
-        x={x}
-        y={y + 46}
-        textAnchor="middle"
-        className="fill-muted-foreground"
-        style={{ fontSize: 13, fontFamily: 'var(--font-sans)' }}
+        x={labelX}
+        y={y + 5}
+        textAnchor={textAnchor}
+        className="fill-foreground"
+        style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)' }}
       >
         {app.name}
+      </text>
+      <text
+        x={labelX}
+        y={y + 23}
+        textAnchor={textAnchor}
+        className="fill-muted-foreground"
+        style={{ fontSize: 11, fontFamily: 'var(--font-sans)' }}
+      >
+        {align === 'left' ? 'source system' : 'decision layer'}
       </text>
     </motion.g>
   )
@@ -159,18 +202,18 @@ export function AppIntegration() {
           y={28}
           textAnchor="middle"
           className="fill-primary"
-          style={{ fontSize: 14, letterSpacing: 3, fontFamily: 'var(--font-mono)' }}
+          style={{ fontSize: 14, letterSpacing: 0, fontFamily: 'var(--font-mono)' }}
         >
-          DATA IN
+          SOURCES
         </text>
         <text
           x={DST_X}
           y={28}
           textAnchor="middle"
           className="fill-[var(--neon)]"
-          style={{ fontSize: 14, letterSpacing: 3, fontFamily: 'var(--font-mono)' }}
+          style={{ fontSize: 14, letterSpacing: 0, fontFamily: 'var(--font-mono)' }}
         >
-          DATA OUT
+          DESTINATIONS
         </text>
 
         {/* ---- INCOMING wires (magenta) ---- */}
@@ -249,16 +292,39 @@ export function AppIntegration() {
               </div>
             </div>
           </foreignObject>
+          <text
+            x={HUB.x}
+            y={HUB.y + 88}
+            textAnchor="middle"
+            className="fill-foreground"
+            style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)' }}
+          >
+            Ingest, model, activate
+          </text>
+          <text
+            x={HUB.x}
+            y={HUB.y + 108}
+            textAnchor="middle"
+            className="fill-muted-foreground"
+            style={{ fontSize: 12, fontFamily: 'var(--font-sans)' }}
+          >
+            one governed data layer
+          </text>
         </motion.g>
 
         {/* ---- Nodes ---- */}
         {sources.map((app, i) => (
-          <Node key={app.name} app={app} x={SRC_X} y={NODE_Y[i]} />
+          <Node key={app.name} app={app} x={SRC_X} y={NODE_Y[i]} align="left" />
         ))}
         {destinations.map((app, i) => (
-          <Node key={app.name} app={app} x={DST_X} y={NODE_Y[i]} />
+          <Node key={app.name} app={app} x={DST_X} y={NODE_Y[i]} align="right" />
         ))}
       </motion.svg>
+      <div className="mt-2 grid gap-2 text-center text-xs text-muted-foreground sm:grid-cols-3">
+        <span className="rounded-md border border-border/60 bg-background/45 px-3 py-2">Connect source systems</span>
+        <span className="rounded-md border border-border/60 bg-background/45 px-3 py-2">Unify operational data</span>
+        <span className="rounded-md border border-border/60 bg-background/45 px-3 py-2">Deliver decisions where teams work</span>
+      </div>
     </div>
   )
 }

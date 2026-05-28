@@ -1,18 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel'
-import Autoplay from 'embla-carousel-autoplay'
 import { AnimatedSection } from '@/components/animated-section'
+import { StaggerContainer, StaggerItem } from '@/components/stagger-container'
 import { EditableText } from '@/components/editable-text'
 import { useAdmin } from '@/components/admin-provider'
 
@@ -48,7 +43,7 @@ const defaultSolutions: Solution[] = [
     category: 'Business Intelligence',
     description: 'Advanced analytics and interactive visualizations powered by Microsoft Power BI. Transform your data into compelling stories that drive business decisions.',
     features: ['Real-time Dashboards', 'Custom Reports', 'Data Modeling', 'AI Insights'],
-    link: null,
+    link: '/solutions/power-bi',
   },
   {
     title: 'Krubase CRM 2025',
@@ -67,25 +62,6 @@ const defaultSolutions: Solution[] = [
     link: 'https://tga-dashboard.vercel.app/',
   },
 ]
-
-function Pagination({ count, current, onSelect }: { count: number; current: number; onSelect: (index: number) => void }) {
-  return (
-    <div className="flex justify-center gap-2 mt-8">
-      {Array.from({ length: count }, (_, index) => (
-        <button
-          key={index}
-          className={`w-2 h-2 rounded-full transition-all duration-200 ${
-            current === index
-              ? 'bg-primary scale-125'
-              : 'bg-muted hover:bg-muted-foreground/50'
-          }`}
-          onClick={() => onSelect(index)}
-          aria-label={`Go to slide ${index + 1}`}
-        />
-      ))}
-    </div>
-  )
-}
 
 function EditableSolutionCard({
   solution,
@@ -166,7 +142,7 @@ function EditableSolutionCard({
 
   return (
     <Card
-      className={`neon-hover w-[90vw] max-w-lg border-2 select-none mx-auto ${isAdmin ? 'cursor-pointer' : ''}`}
+      className={`neon-hover flex h-full flex-col border-2 select-none ${isAdmin ? 'cursor-pointer' : ''}`}
       onClick={() => isAdmin && setEditing(true)}
     >
       <CardHeader className="pb-4">
@@ -174,13 +150,13 @@ function EditableSolutionCard({
           <span className="text-xs tracking-widest text-primary font-medium">
             {solution.category.toUpperCase()}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             {solution.year}
           </span>
         </div>
         <CardTitle className="text-2xl">{solution.title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-1 flex-col space-y-4">
         <CardDescription className="text-base">
           {solution.description}
         </CardDescription>
@@ -195,13 +171,21 @@ function EditableSolutionCard({
           ))}
         </div>
         {solution.link ? (
-          <Button variant="outline" className="w-full mt-4" asChild>
-            <a href={solution.link} target="_blank" rel="noopener noreferrer">
-              See it live
-            </a>
-          </Button>
+          solution.link.startsWith('/') ? (
+            <Button variant="outline" className="mt-auto w-full" asChild>
+              <Link href={solution.link}>
+                Explore the demo →
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" className="mt-auto w-full" asChild>
+              <a href={solution.link} target="_blank" rel="noopener noreferrer">
+                See it live →
+              </a>
+            </Button>
+          )
         ) : (
-          <Button variant="outline" className="w-full mt-4" disabled>
+          <Button variant="outline" className="mt-auto w-full" disabled>
             Coming Soon
           </Button>
         )}
@@ -210,7 +194,7 @@ function EditableSolutionCard({
   )
 }
 
-export function SolutionsShowcase() {
+export function SolutionsShowcase({ showHeader = true }: { showHeader?: boolean }) {
   const { isAdmin } = useAdmin()
   const [solutions, setSolutions] = useState<Solution[]>(defaultSolutions)
 
@@ -241,81 +225,47 @@ export function SolutionsShowcase() {
     saveSolutions(newSolutions)
   }
 
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const [count, setCount] = useState(0)
-
-  const onSelect = useCallback(() => {
-    if (!api) return
-    setCurrent(api.selectedScrollSnap())
-  }, [api])
-
-  useEffect(() => {
-    if (!api) return
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap())
-    api.on('select', onSelect)
-    return () => {
-      api.off('select', onSelect)
-    }
-  }, [api, onSelect])
-
-  const scrollTo = useCallback(
-    (index: number) => {
-      api?.scrollTo(index)
-    },
-    [api]
-  )
-
   return (
     <div className="w-full">
-        <AnimatedSection direction="up">
-          <div className="text-center mb-12 px-4">
-            <EditableText
-              storageKey="solutions-label"
-              defaultValue="FEATURED WORK"
-              as="p"
-              className="text-eyebrow mb-4"
-            />
-            <EditableText
-              storageKey="solutions-title"
-              defaultValue="Solutions That Drive Real Change"
-              as="h2"
-              className="text-3xl md:text-4xl font-semibold mb-4"
-            />
-            <EditableText
-              storageKey="solutions-description"
-              defaultValue="The same approach we describe above, applied to real projects. From government spending transparency to business intelligence dashboards and custom CRMs, here is a sample of the work we have shipped for clients and the wider community."
-              as="p"
-              className="text-muted-foreground max-w-2xl mx-auto"
-            />
-          </div>
-        </AnimatedSection>
+        {showHeader && (
+          <AnimatedSection direction="up">
+            <div className="text-center mb-12 px-4">
+              <EditableText
+                storageKey="solutions-label"
+                defaultValue="FEATURED WORK"
+                as="p"
+                className="text-eyebrow mb-4"
+              />
+              <EditableText
+                storageKey="solutions-title"
+                defaultValue="Solutions That Drive Real Change"
+                as="h2"
+                className="text-3xl md:text-4xl font-semibold mb-4"
+              />
+              <EditableText
+                storageKey="solutions-description"
+                defaultValue="Real projects we have shipped for clients and the wider community, from government spending transparency to business intelligence dashboards and custom CRMs."
+                as="p"
+                className="text-muted-foreground max-w-2xl mx-auto"
+              />
+            </div>
+          </AnimatedSection>
+        )}
 
-        <AnimatedSection direction="up" delay={0.2}>
-          <div className="relative max-w-2xl mx-auto px-4">
-            <Carousel
-              setApi={setApi}
-              opts={{ loop: true }}
-              plugins={[Autoplay({ delay: 6000, stopOnInteraction: false })]}
-              className="py-4"
-            >
-              <CarouselContent>
-                {solutions.map((solution, index) => (
-                  <CarouselItem key={index}>
-                    <EditableSolutionCard
-                      solution={solution}
-                      isAdmin={isAdmin}
-                      onUpdate={(updated) => handleUpdate(index, updated)}
-                      onDelete={() => handleDelete(index)}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-            <Pagination count={count} current={current} onSelect={scrollTo} />
-          </div>
-        </AnimatedSection>
+        <div className="mx-auto max-w-6xl px-4">
+          <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" staggerDelay={0.08}>
+            {solutions.map((solution, index) => (
+              <StaggerItem key={index} className="h-full">
+                <EditableSolutionCard
+                  solution={solution}
+                  isAdmin={isAdmin}
+                  onUpdate={(updated) => handleUpdate(index, updated)}
+                  onDelete={() => handleDelete(index)}
+                />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
     </div>
   )
 }

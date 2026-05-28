@@ -8,7 +8,7 @@ import { LogoHorizontal } from '@/components/logo'
 const quickLinks = [
   { name: 'Services', href: '/services' },
   { name: 'Contact', href: '/contact' },
-  { name: 'Solutions', href: '#solutions' },
+  { name: 'Solutions', href: '/solutions' },
   { name: 'How We Work', href: '/how-we-work' },
 ]
 

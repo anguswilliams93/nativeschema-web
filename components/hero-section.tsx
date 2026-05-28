@@ -85,9 +85,9 @@ export function HeroSection() {
           {/* Main headline - the tagline */}
           <TextReveal
             as="h1"
-            text="Seamless integrations for smart business"
+            text="Powerful decisions, driven by data"
             delay={0.3}
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 text-foreground text-balance"
+            className="text-4xl md:text-5xl lg:text-6xl font-normal mb-6 text-foreground text-balance"
           />
 
           {/* Subheading - expanded explanation */}
@@ -97,18 +97,13 @@ export function HeroSection() {
               messy data in between, and turns it into Power BI reports your
               whole team can trust.
             </p>
-            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed mb-8">
-              No more manual exports. No more mismatched spreadsheets. Just one
-              reliable source of truth for revenue, profitability, and cash flow,
-              so you can make decisions with confidence.
-            </p>
           </AnimatedSection>
 
           {/* Calls to action */}
           <AnimatedSection direction="up" delay={0.7}>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button size="lg" className="h-12 text-base font-semibold" asChild>
-                <Link href="/contact">Get my Power BI reports</Link>
+                <Link href="/solutions/power-bi">See a Power BI report mockup</Link>
               </Button>
               <Button size="lg" variant="outline" className="h-12 text-base font-semibold" asChild>
                 <Link href="/contact#book">Book a 30-minute scope</Link>
