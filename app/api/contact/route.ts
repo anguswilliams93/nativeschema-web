@@ -3,6 +3,32 @@ import { NextResponse } from 'next/server'
 
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY
 
+// Who gets the internal enquiry notification. Comma-separated list supported.
+// Falls back to BOOKING_RECIPIENT, then to both team inboxes.
+const CONTACT_RECIPIENTS = (
+  process.env.CONTACT_RECIPIENT ||
+  process.env.BOOKING_RECIPIENT ||
+  'angus@nativeschema.com,di@nativeschema.com'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+// Resend hosted template sent to the lead as their confirmation.
+const LEAD_TEMPLATE_ID =
+  process.env.RESEND_LEAD_TEMPLATE_ID || 'c0ad8ece-ec28-4ab7-8568-090e8240077d'
+
+// Friendly labels for the service the lead picked, matching the contact form.
+const SERVICE_LABELS: Record<string, string> = {
+  'power-bi': 'Power BI Consulting & Dashboards',
+  actionstep: 'Actionstep Workflow Design',
+  'custom-software': 'Custom Software Development',
+  integrations: 'System Integrations',
+  migration: 'Migration Services',
+  website: 'Website Design & Hosting',
+  other: 'Other / Not Sure',
+}
+
 interface ContactFormData {
   name: string
   email: string
@@ -71,19 +97,22 @@ export async function POST(request: Request) {
       )
     }
 
-    // Send email via Resend
-    console.log('Sending email via Resend...')
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const serviceLabel = service ? SERVICE_LABELS[service] || service : 'Not specified'
+
+    // 1. Notify the team. This is the email that must succeed — if it fails the
+    // enquiry is effectively lost, so we surface an error to the visitor.
+    console.log('Sending team notification via Resend...')
     const { data, error } = await resend.emails.send({
       from: 'contact@noreply.nativeschema.com',
-      to: 'angus@nativeschema.com',
+      to: CONTACT_RECIPIENTS,
       replyTo: email,
       subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
       text: `
 Name: ${name}
 Email: ${email}
 Company: ${company || 'Not provided'}
-Service Interested In: ${service || 'Not specified'}
+Service Interested In: ${serviceLabel}
 
 Message:
 ${message}
@@ -93,7 +122,7 @@ ${message}
 <p><strong>Name:</strong> ${name}</p>
 <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
 <p><strong>Company:</strong> ${company || 'Not provided'}</p>
-<p><strong>Service Interested In:</strong> ${service || 'Not specified'}</p>
+<p><strong>Service Interested In:</strong> ${serviceLabel}</p>
 <hr />
 <h3>Message:</h3>
 <p>${message.replace(/\n/g, '<br />')}</p>
@@ -106,6 +135,29 @@ ${message}
         { error: `Failed to send message: ${error.message}` },
         { status: 500 }
       )
+    }
+
+    // 2. Confirm to the lead using the Resend hosted template. Best-effort: a
+    // failure here should not block the enquiry the team already received.
+    try {
+      const { error: leadError } = await resend.emails.send({
+        from: 'Native Schema <contact@noreply.nativeschema.com>',
+        to: email,
+        replyTo: CONTACT_RECIPIENTS,
+        template: {
+          id: LEAD_TEMPLATE_ID,
+          variables: {
+            name,
+            company: company || 'your team',
+            email,
+            service: serviceLabel,
+            message,
+          },
+        },
+      })
+      if (leadError) console.error('Lead confirmation email error:', leadError)
+    } catch (err) {
+      console.error('Lead confirmation email threw:', err)
     }
 
     console.log('Email sent successfully:', data)
