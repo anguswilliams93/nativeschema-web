@@ -17,7 +17,11 @@ export const runtime = 'nodejs'
 
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY
 const BOOKING_TIMEZONE = process.env.BOOKING_TIMEZONE || 'Australia/Brisbane'
-const BOOKING_RECIPIENT = process.env.BOOKING_RECIPIENT || 'angus@nativeschema.com'
+// Comma-separated list supported, e.g. "angus@nativeschema.com,di@nativeschema.com".
+const BOOKING_RECIPIENTS = (process.env.BOOKING_RECIPIENT || 'angus@nativeschema.com')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
 
 interface BookingData {
   name: string
@@ -50,6 +54,57 @@ function addMinutes(time: string, minutes: number): string {
   const hh = String(Math.floor(total / 60)).padStart(2, '0')
   const mm = String(total % 60).padStart(2, '0')
   return `${hh}:${mm}`
+}
+
+// Human-friendly "Wed 11 Jun 2026 at 2:30 PM" from raw date/time parts.
+function formatWhen(date: string, time: string): string {
+  const [y, mo, d] = date.split('-').map(Number)
+  const [h, mi] = time.split(':').map(Number)
+  const dt = new Date(Date.UTC(y, mo - 1, d, h, mi))
+  const day = dt.toLocaleDateString('en-AU', { weekday: 'short', timeZone: 'UTC' })
+  const dnum = dt.toLocaleDateString('en-AU', { day: 'numeric', timeZone: 'UTC' })
+  const month = dt.toLocaleDateString('en-AU', { month: 'short', timeZone: 'UTC' })
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  const t = `${hour12}:${String(mi).padStart(2, '0')} ${period}`
+  return `${day} ${dnum} ${month} ${y} at ${t}`
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function bookerHtml(args: {
+  name: string
+  whenLabel: string
+  timezone: string
+  notes?: string
+  calendarLink: string | null
+}): string {
+  const { name, whenLabel, timezone, notes, calendarLink } = args
+  const meetingBlock = calendarLink
+    ? `<p style="margin:0 0 16px"><a href="${escapeHtml(calendarLink)}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600">View the meeting &amp; video link</a></p>`
+    : `<p style="margin:0 0 16px;color:#475569">We'll send through the video meeting link before the call. Need to reschedule? Just reply to this email.</p>`
+  const notesBlock = notes
+    ? `<p style="margin:16px 0 0;color:#475569"><strong>What you wanted to cover:</strong><br/>${escapeHtml(notes).replace(/\n/g, '<br/>')}</p>`
+    : ''
+  return `
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;color:#0f172a">
+  <h2 style="margin:0 0 8px">You're booked in 🎉</h2>
+  <p style="margin:0 0 16px;color:#475569">Hi ${escapeHtml(name)}, thanks for booking a 30-minute scoping call with Native Schema.</p>
+  <table style="width:100%;border-collapse:collapse;margin:0 0 20px">
+    <tr><td style="padding:8px 0;color:#64748b;width:90px">When</td><td style="padding:8px 0;font-weight:600">${escapeHtml(whenLabel)}</td></tr>
+    <tr><td style="padding:8px 0;color:#64748b">Timezone</td><td style="padding:8px 0">${escapeHtml(timezone)}</td></tr>
+    <tr><td style="padding:8px 0;color:#64748b">Duration</td><td style="padding:8px 0">30 minutes</td></tr>
+  </table>
+  ${meetingBlock}
+  ${notesBlock}
+  <p style="margin:24px 0 0;color:#94a3b8;font-size:13px">Native Schema</p>
+</div>`.trim()
 }
 
 function base64url(input: string | Buffer): string {
@@ -187,12 +242,15 @@ export async function POST(request: Request) {
       console.error('Calendar booking error:', calendarError)
     }
 
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const whenLabel = formatWhen(date, time)
+
     // Notify the team regardless of calendar outcome.
+    let teamEmailed = false
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: 'contact@noreply.nativeschema.com',
-        to: BOOKING_RECIPIENT,
+        to: BOOKING_RECIPIENTS,
         replyTo: email,
         subject: `New scoping call: ${name} on ${date} at ${time}`,
         text: [
@@ -201,7 +259,7 @@ export async function POST(request: Request) {
           `Name: ${name}`,
           `Email: ${email}`,
           `Company: ${company || 'Not provided'}`,
-          `When: ${date} at ${time} (${BOOKING_TIMEZONE})`,
+          `When: ${whenLabel} (${BOOKING_TIMEZONE})`,
           `Notes: ${notes || 'Not provided'}`,
           ``,
           calendarLink
@@ -209,18 +267,56 @@ export async function POST(request: Request) {
             : `Calendar event was NOT created automatically: ${calendarError}. Please add it manually.`,
         ].join('\n'),
       })
+      teamEmailed = true
     } catch (err) {
-      console.error('Booking email error:', err)
-      // If the calendar event also failed, the booking is effectively lost.
-      if (!calendarLink) {
-        return NextResponse.json(
-          { error: 'We could not confirm your booking. Please try again or email us directly.' },
-          { status: 500 },
-        )
-      }
+      console.error('Booking team email error:', err)
     }
 
-    return NextResponse.json({ success: true, calendar: Boolean(calendarLink) })
+    // Confirm to the person who booked. Until calendar invites are wired up this
+    // is the only thing that lands in their inbox, so it is the real confirmation.
+    let bookerEmailed = false
+    try {
+      await resend.emails.send({
+        from: 'Native Schema <contact@noreply.nativeschema.com>',
+        to: email,
+        replyTo: BOOKING_RECIPIENTS,
+        subject: `Your scoping call with Native Schema — ${whenLabel}`,
+        text: [
+          `Hi ${name},`,
+          ``,
+          `Thanks for booking a 30-minute scoping call with Native Schema.`,
+          ``,
+          `When: ${whenLabel} (${BOOKING_TIMEZONE})`,
+          `Duration: 30 minutes`,
+          ``,
+          calendarLink
+            ? `Join / view the meeting: ${calendarLink}`
+            : `We will send through the video meeting link before the call. If you need to reschedule, just reply to this email.`,
+          ``,
+          notes ? `What you wanted to cover:\n${notes}\n` : ``,
+          `Talk soon,`,
+          `Native Schema`,
+        ].join('\n'),
+        html: bookerHtml({ name, whenLabel, timezone: BOOKING_TIMEZONE, notes, calendarLink }),
+      })
+      bookerEmailed = true
+    } catch (err) {
+      console.error('Booking confirmation email error:', err)
+    }
+
+    // The booking is only lost if nothing reached anyone and no calendar event exists.
+    if (!calendarLink && !teamEmailed && !bookerEmailed) {
+      return NextResponse.json(
+        { error: 'We could not confirm your booking. Please try again or email us directly.' },
+        { status: 500 },
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      calendar: Boolean(calendarLink),
+      confirmationEmailed: bookerEmailed,
+    })
   } catch (error) {
     console.error('Booking error:', error)
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })

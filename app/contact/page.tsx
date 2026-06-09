@@ -27,7 +27,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { AnimatedSection } from '@/components/animated-section'
 import { LogoHorizontal } from '@/components/logo'
-import { BookingCalendar } from '@/components/booking-calendar'
 
 const socialLinks = [
   { name: 'Instagram', href: 'https://instagram.com/nativeschema' },
@@ -191,50 +190,25 @@ export default function ContactPage() {
                 </span>
               </h1>
               <p className="text-muted-foreground max-w-2xl mx-auto text-lg md:text-xl">
-                Ready to transform your operations? Book a free 30-minute scoping
-                call below and we will create the meeting in your calendar
-                automatically. Prefer to write? Send us a message instead and we
-                will reply within one business day.
+                Ready to transform your operations? Send us a message with a
+                little about your project and we will reply within one business
+                day.
               </p>
             </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Booking Section - books a 30-minute call and auto-creates a calendar event */}
-      <section id="book" className="py-24 px-4 bg-background border-t border-border/40 scroll-mt-24">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedSection direction="up">
-            <div className="text-center mb-10">
-              <span className="text-eyebrow mb-4 block">
-                BOOK A SCOPE
-              </span>
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">
-                Grab a 30-Minute Scoping Call
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                Choose a day and time that works for you. As soon as you confirm,
-                we create a 30-minute meeting in our calendar and send you an
-                invite with a video link. No back-and-forth emails, no waiting.
-              </p>
-            </div>
-          </AnimatedSection>
-          <AnimatedSection direction="up" delay={0.15}>
-            <BookingCalendar />
           </AnimatedSection>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-24 px-4 bg-muted/30 border-t border-border/40">
+      <section id="book" className="py-24 px-4 bg-muted/30 border-t border-border/40 scroll-mt-24">
         <div className="max-w-6xl mx-auto">
           <AnimatedSection direction="up">
             <div className="text-center mb-12">
               <span className="text-eyebrow mb-4 block">
-                OR SEND A MESSAGE
+                SEND A MESSAGE
               </span>
               <h2 className="text-3xl md:text-4xl font-semibold mb-4">
-                Prefer to Write First?
+                Tell Us About Your Project
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                 Tell us a little about your project and we will get back to you

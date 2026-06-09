@@ -130,8 +130,8 @@ export function BookingCalendar() {
           We have you down for {confirmedFor}.
         </p>
         <p className="text-muted-foreground">
-          A calendar invite with a video link is on its way to your inbox. If
-          anything changes, just reply to that invite and we will sort it out.
+          A confirmation email is on its way to your inbox. If anything changes,
+          just reply to it and we will sort it out.
         </p>
         <Button className="mt-8" variant="outline" onClick={() => setStatus('idle')}>
           Book another time
@@ -149,8 +149,8 @@ export function BookingCalendar() {
         <div>
           <h3 className="text-xl font-semibold">Book a 30-minute scoping call</h3>
           <p className="text-sm text-muted-foreground">
-            Pick a time that suits you. We will confirm instantly and send a
-            calendar invite with a video link. Times shown in {TIMEZONE_LABEL}.
+            Pick a time that suits you. We will confirm instantly by email.
+            Times shown in {TIMEZONE_LABEL}.
           </p>
         </div>
       </div>
