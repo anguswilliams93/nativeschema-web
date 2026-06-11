@@ -76,11 +76,15 @@ Installed: `button`, `card`, `carousel`, `chart`.
 - Fonts: Geist Sans (`--font-geist-sans`) + Geist Mono (`--font-geist-mono`) via `next/font/google`.
 
 ### Contact form
-`POST /api/contact` — Cloudflare Turnstile verification → Resend team notification + Resend hosted-template confirmation to lead. Env vars:
+`POST /api/contact` — Cloudflare Turnstile verification → Resend team notification + Resend hosted-template confirmation to lead → best-effort push to bd-worker. Env vars:
 - `RESEND_API_KEY`
 - `TURNSTILE_SECRET_KEY`
 - `CONTACT_RECIPIENT` (defaults to `angus@nativeschema.com,di@nativeschema.com`)
 - `RESEND_LEAD_TEMPLATE_ID`
+- `NS_BD_WORKER_URL` — bd-worker `/leads/bd` endpoint (via cloudflared). **Leave unset** to disable the push.
+- `NS_BD_WORKER_SECRET` — `X-BD-Secret` header value, must match `BD_LEAD_SECRET` in `server/.env.prod`
+
+**BD-worker push** (`lib/bd-push.ts`) — self-gated on the two `NS_BD_WORKER_*` vars. On a successful contact form submission the lead is POSTed to the bd-worker which runs the intake workflow (research brief + questionnaire draft). The push is best-effort and never blocks the form response. `host` is derived from the submitter's email domain; `note` is composed from company + service + message. See `.env.local.example`.
 
 ## Google Ads considerations
 

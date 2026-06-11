@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
+import { pushLeadToBdWorker } from '@/lib/bd-push'
 
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY
 
@@ -39,6 +40,8 @@ interface ContactFormData {
 }
 
 async function verifyTurnstile(token: string): Promise<{ success: boolean; error?: string }> {
+  // Dev bypass: no-op when secret is unset (mirrors zerobi website pattern).
+  if (!TURNSTILE_SECRET) return { success: true }
   try {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
@@ -80,35 +83,42 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify Turnstile token
-    if (!turnstileToken) {
+    // Verify Turnstile token (skipped when TURNSTILE_SECRET_KEY is unset — dev only)
+    if (TURNSTILE_SECRET && !turnstileToken) {
       return NextResponse.json(
         { error: 'Please complete the security check' },
         { status: 400 }
       )
     }
 
-    const turnstileResult = await verifyTurnstile(turnstileToken)
-    if (!turnstileResult.success) {
-      console.error('Turnstile failed:', turnstileResult.error)
-      return NextResponse.json(
-        { error: `Security verification failed: ${turnstileResult.error || 'Please try again.'}` },
-        { status: 400 }
-      )
+    if (turnstileToken) {
+      const turnstileResult = await verifyTurnstile(turnstileToken)
+      if (!turnstileResult.success) {
+        console.error('Turnstile failed:', turnstileResult.error)
+        return NextResponse.json(
+          { error: `Security verification failed: ${turnstileResult.error || 'Please try again.'}` },
+          { status: 400 }
+        )
+      }
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY)
     const serviceLabel = service ? SERVICE_LABELS[service] || service : 'Not specified'
 
-    // 1. Notify the team. This is the email that must succeed — if it fails the
-    // enquiry is effectively lost, so we surface an error to the visitor.
-    console.log('Sending team notification via Resend...')
-    const { data, error } = await resend.emails.send({
-      from: 'contact@noreply.nativeschema.com',
-      to: CONTACT_RECIPIENTS,
-      replyTo: email,
-      subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
-      text: `
+    // Fire bd-worker push and email notifications in parallel. The bd-push is
+    // independent of email — a validated lead should always reach the pipeline
+    // regardless of Resend availability. Email to team is still required for the
+    // visitor to get a success response.
+    const [emailResult] = await Promise.allSettled([
+      // 1. Notify the team. Must succeed — surface error to visitor if it fails.
+      (async () => {
+        console.log('Sending team notification via Resend...')
+        return resend.emails.send({
+          from: 'contact@noreply.nativeschema.com',
+          to: CONTACT_RECIPIENTS,
+          replyTo: email,
+          subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
+          text: `
 Name: ${name}
 Email: ${email}
 Company: ${company || 'Not provided'}
@@ -116,8 +126,8 @@ Service Interested In: ${serviceLabel}
 
 Message:
 ${message}
-      `.trim(),
-      html: `
+          `.trim(),
+          html: `
 <h2>New Contact Form Submission</h2>
 <p><strong>Name:</strong> ${name}</p>
 <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
@@ -126,41 +136,57 @@ ${message}
 <hr />
 <h3>Message:</h3>
 <p>${message.replace(/\n/g, '<br />')}</p>
-      `.trim(),
-    })
+          `.trim(),
+        })
+      })(),
 
-    if (error) {
-      console.error('Resend error:', error)
+      // 2. Best-effort push to the BD workflow engine. No-op unless
+      // NS_BD_WORKER_URL + NS_BD_WORKER_SECRET are set. Never throws.
+      pushLeadToBdWorker({ email, name, company, service: serviceLabel, message }),
+
+      // 3. Confirm to the lead using the Resend hosted template. Best-effort.
+      (async () => {
+        try {
+          const { error: leadError } = await resend.emails.send({
+            from: 'Native Schema <contact@noreply.nativeschema.com>',
+            to: email,
+            replyTo: CONTACT_RECIPIENTS,
+            template: {
+              id: LEAD_TEMPLATE_ID,
+              variables: {
+                name,
+                company: company || 'your team',
+                email,
+                service: serviceLabel,
+                message,
+              },
+            },
+          })
+          if (leadError) console.error('Lead confirmation email error:', leadError)
+        } catch (err) {
+          console.error('Lead confirmation email threw:', err)
+        }
+      })(),
+    ])
+
+    // Only the team notification is required.
+    if (emailResult.status === 'fulfilled' && emailResult.value.error) {
+      const err = emailResult.value.error
+      console.error('Resend error:', err)
       return NextResponse.json(
-        { error: `Failed to send message: ${error.message}` },
+        { error: `Failed to send message: ${err.message}` },
+        { status: 500 }
+      )
+    }
+    if (emailResult.status === 'rejected') {
+      console.error('Team email threw:', emailResult.reason)
+      return NextResponse.json(
+        { error: 'Failed to send message. Please try again.' },
         { status: 500 }
       )
     }
 
-    // 2. Confirm to the lead using the Resend hosted template. Best-effort: a
-    // failure here should not block the enquiry the team already received.
-    try {
-      const { error: leadError } = await resend.emails.send({
-        from: 'Native Schema <contact@noreply.nativeschema.com>',
-        to: email,
-        replyTo: CONTACT_RECIPIENTS,
-        template: {
-          id: LEAD_TEMPLATE_ID,
-          variables: {
-            name,
-            company: company || 'your team',
-            email,
-            service: serviceLabel,
-            message,
-          },
-        },
-      })
-      if (leadError) console.error('Lead confirmation email error:', leadError)
-    } catch (err) {
-      console.error('Lead confirmation email threw:', err)
-    }
-
-    console.log('Email sent successfully:', data)
+    console.log('Contact form handled successfully')
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Contact form error:', error)
